@@ -1,5 +1,8 @@
+CENGINE = transform.o objects.o display.o render.o matrix.o lines.o
 SDLFLAGS = `sdl2-config --cflags --static-libs`
 STDFLAGS = -g -O3
+
+build: $(CENGINE)
 
 transform.o: transform.c transform.h
 	gcc transform.c -o transform.o -c $(STDFLAGS)
