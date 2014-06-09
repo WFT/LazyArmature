@@ -4,8 +4,15 @@
 #include "options.h"
 #include "render.h"
 
+inline double eye_distance(double x, double y, double z, double *eye) {
+  double dx = x - eye[0];
+  double dy = y - eye[1];
+  double dz = z - eye[2];
+  return (dx*dx) + (dy*dy) + (dz*dz);
+}
+
 // assumes x y z 1 pattern
-char culltri(double coors[12], double *eye) {
+inline char culltri(double coors[12], double *eye) {
   //backface culling
   double *p1 = coors, *p2 = coors+4, *p3 = coors+8;
   double a[3], b[3], cross[3];
@@ -27,16 +34,16 @@ char culltri(double coors[12], double *eye) {
 }
 
 // modifies the pointed to x and y with a perspective transform
-void perspectify(double *x, double *y, double pz, double *eye) {
+inline void perspectify(double *x, double *y, double pz, double *eye) {
   *x = eye[0] - (eye[2] * (*x-eye[0]) / (pz - eye[2]));
   *y = eye[1] - (eye[2] * (*y-eye[1]) / (pz - eye[2]));
 }
 
-void renderperspective(Matrix *faces, double *eye, uint32_t color) {
+void renderperspective(Matrix *faces, double *eye, Matrix *colors) {
   double coors[6];
   int c;
   double pz;
-  int line[6];
+  KZ_Point p1 = (KZ_Point){0,0,0,0,0,0}, p2 = (KZ_Point){0,0,0,0,0,0}, p3 = (KZ_Point){0,0,0,0,0,0};
   double tri[12];
   for (c = 0; c < faces->cols; c += 3) {
 #if ENABLE_CULLING
@@ -49,35 +56,61 @@ void renderperspective(Matrix *faces, double *eye, uint32_t color) {
     pz = mat_get_cell(faces, c, 2);
     coors[0] = mat_get_cell(faces, c, 0);
     coors[1] = mat_get_cell(faces, c, 1);
+    p1.r = eye_distance(coors[0], coors[1], pz, eye);
+    p1.kr = mat_get_cell(colors, c, 0);
+    p1.kg = mat_get_cell(colors, c, 1);
+    p1.kb = mat_get_cell(colors, c, 2);
+    p1.ared = p1.kr * ambient_red;
+    p1.agreen = p1.kg * ambient_green;
+    p1.ablue = p1.kb * ambient_blue;
     perspectify(coors, coors+1, pz, eye);
 
     pz = mat_get_cell(faces, c+1, 2);
     coors[2] = mat_get_cell(faces, c+1, 0);
     coors[3] = mat_get_cell(faces, c+1, 1);
+    p2.r = eye_distance(coors[2], coors[3], pz, eye);
+    p2.kr = mat_get_cell(colors, c+1, 0);
+    p2.kg = mat_get_cell(colors, c+1, 1);
+    p2.kb = mat_get_cell(colors, c+1, 2);
+    p2.ared = p2.kr * ambient_red;
+    p2.agreen = p2.kg * ambient_green;
+    p2.ablue = p2.kb * ambient_blue;
     perspectify(coors+2, coors+3, pz, eye);
 
     pz = mat_get_cell(faces, c+2, 2);
     coors[4] = mat_get_cell(faces, c+2, 0);
     coors[5] = mat_get_cell(faces, c+2, 1);
+    p3.r = eye_distance(coors[4], coors[5], pz, eye);
+    p3.kr = mat_get_cell(colors, c+2, 0);
+    p3.kg = mat_get_cell(colors, c+2, 1);
+    p3.kb = mat_get_cell(colors, c+2, 2);
+    p3.ared = p3.kr * ambient_red;
+    p3.agreen = p3.kg * ambient_green;
+    p3.ablue = p3.kb * ambient_blue;
     perspectify(coors+4, coors+5, pz, eye);
 
     map_coors(coors, coors+1);
     map_coors(coors+2, coors+3);
     map_coors(coors+4, coors+5);
 
-    int i;
-    for (i = 0; i < 6; i++)
-      line[i] = coors[i];
-    draw_triangle(line, color);
+    p1.x = coors[0];
+    p1.y = coors[1];
+    p2.x = coors[2];
+    p2.y = coors[3];
+    p3.x = coors[4];
+    p3.y = coors[5];
+    draw_triangle(p1, p2, p3);
   }
+  flip_KZ_buffer();
 }
 
-void rendercyclops(Matrix *faces, double *eye) {
+void rendercyclops(Matrix *faces, double *eye, Matrix *colors) {
   clear_pixel_buffer();
-  renderperspective(faces, eye, rgb(255, 255, 255));
+  renderperspective(faces, eye, colors);
   update_display();
 }
 
+/*
 void renderstereo(Matrix *faces, double *eyes) {
   clear_pixel_buffer();
 
@@ -90,7 +123,7 @@ void renderstereo(Matrix *faces, double *eyes) {
   mixcolors(0);
 
   update_display();
-}
+  }*/
 
 char endspin() {
   SDL_Event event;
@@ -99,7 +132,7 @@ char endspin() {
       SDL_Quit();
       return 1;
     } else if (event.type == SDL_KEYDOWN) {
-      printf("MAN DOWN\n");
+      
       return 1;
     }
   }
@@ -119,7 +152,7 @@ Matrix *spinmat(int x, int y, int z) {
   return xyz;
 }
 
-void spincyclops(Matrix *faces, double *eye, int del) {
+void spincyclops(Matrix *faces, double *eye, Matrix *colors, int del) {
   Matrix *xyz = spinmat(1, 1, 1);
   Matrix *rot;
   Matrix *unspun = faces;
@@ -130,18 +163,19 @@ void spincyclops(Matrix *faces, double *eye, int del) {
     rot = mat_multiply(xyz, faces);
     mat_destruct(faces);
     faces = rot;
-    renderperspective(faces, eye, SPIN_FILL_COLOR);
+    renderperspective(faces, eye, colors);
     SDL_Delay(del);
     update_display();
     clear_pixel_buffer();
   }
   clear_screen();
   printf("Spin finished... Resetting display.\n");
-  renderperspective(unspun, eye, rgb(255, 255, 255));
+  renderperspective(unspun, eye, colors);
   mat_destruct(xyz);
   mat_destruct(rot);
 }
 
+/*
 void spinstereo(Matrix *faces, double *eyes, int del) {
   Matrix *xyz = spinmat(1, 1, 1);
   double *el = eyes;
@@ -173,3 +207,4 @@ void spinstereo(Matrix *faces, double *eyes, int del) {
   mat_destruct(xyz);
   mat_destruct(rot);
 }
+*/

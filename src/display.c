@@ -8,6 +8,9 @@ SDL_Surface *surface = NULL;
 SDL_Renderer *ren = NULL;
 SDL_Texture *tex = NULL;
 
+// the kz_buf for lighting + z-buf (to later be pushed to screen)
+KZ_Point **kz_buf;
+
 // should mix colors when adding new pixel
 char mix = 0;
 
@@ -16,7 +19,15 @@ void log_SDL_error(const char *e) {
 }
 
 int init_live_render(int w, int h) {
-
+  // init kz_buf
+  kz_buf = malloc(w * sizeof(KZ_Point *));
+  int i, j;
+  for (i = 0; i < w; i++) {
+    kz_buf[i] = calloc(h, sizeof(KZ_Point));
+    for (j = 0; j < h; j++) {
+      kz_buf[i][j] = (KZ_Point){-1, -1, 0.0, 0.0, 0.0, 0.0, 0};
+    }
+  }
   if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
     log_SDL_error("SDL_Init()");
     return 1;
@@ -45,7 +56,6 @@ int init_live_render(int w, int h) {
     log_SDL_error("SDL_CreateTextureFromSurface()");
     return 1;
   }
-  //SDL_RenderClear(ren);
   clear_screen();
   rendering_initialized = 1;
   return 0;
@@ -76,6 +86,7 @@ void setpix(int x, int y, uint32_t color, char lock) {
   if (lock)
     unlock_surface();
 }
+
 uint32_t getpix(int x, int y, char lock) {
   if (lock)
     lock_surface();
@@ -88,6 +99,31 @@ uint32_t getpix(int x, int y, char lock) {
 
   return *((uint32_t *)p);
 }
+
+// inserts this point into the kz buffer if it isn't occluded
+void consider_KZ_Point(KZ_Point p) {
+  if (p.x >= 0 && p.x < surface->w && p.y < surface->h
+      && (kz_buf[p.x][p.y].x < 0 || kz_buf[p.x][p.y].r >= p.r)) {
+    kz_buf[p.x][p.y] = p;    
+  }
+}
+
+void flip_KZ_buffer() {
+  lock_surface();
+  int x, y;
+  uint32_t color;
+  for (x = 0; x < surface->w; x ++) {
+    for (y = 0; y < surface->h; y++) {
+      if (kz_buf[x][y].x < 0) continue;
+      color = rgb((uint32_t)kz_buf[x][y].ared, 
+		  (uint32_t)kz_buf[x][y].agreen, 
+		  (uint32_t)kz_buf[x][y].ablue);
+      setpix(x, y, color, 0);
+    }
+  }
+  unlock_surface();
+}
+
 
 void lock_surface() {
   if (SDL_MUSTLOCK(surface))
@@ -134,8 +170,7 @@ void dline(int *coors, uint32_t color) {
   int x = x1, y = y1;
   int acc = dx/2;
   int step = y1 < y2 ? 1 : -1;
-  if (SDL_MUSTLOCK(surface))
-    SDL_LockSurface(surface);
+  lock_surface();
   if (xMaj) {
     while (x <= x2) {
       setpix(x, y, color, 0);
@@ -159,8 +194,7 @@ void dline(int *coors, uint32_t color) {
       y += step;
     }
   }
-  if (SDL_MUSTLOCK(surface))
-    SDL_UnlockSurface(surface);
+  unlock_surface();
 }
 
 // rendering functions
@@ -198,6 +232,12 @@ void clear_screen() {
 
 void clear_pixel_buffer() {
   SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
+  int i, j;
+  for (i = 0; i < surface->w; i++) {
+    for (j = 0; j < surface->h; j++) {
+      kz_buf[i][j] = (KZ_Point){-1, -1, 0, 0, 0, 0};
+    }
+  }
 }
 
 // call to clean up
