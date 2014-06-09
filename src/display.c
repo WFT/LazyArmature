@@ -18,7 +18,7 @@ void log_SDL_error(const char *e) {
   printf("%s failed:\n\t%s\n", e, SDL_GetError());
 }
 
-int init_live_render(int w, int h) {
+char init_live_render(int w, int h) {
   // init kz_buf
   kz_buf = malloc(w * sizeof(KZ_Point *));
   int i, j;
