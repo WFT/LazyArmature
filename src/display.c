@@ -160,54 +160,6 @@ void map_coors(double *x, double *y) {
   *y = -ceil((*y - screen[3])*yscale);
 }
 
-// draw a line
-void dline(int *coors, uint32_t color) {
-  // draw a line to out
-  int x1, x2, y1, y2;
-  // ensure left to right
-  if (coors[0] > coors[2]) {
-    x1 = coors[2];
-    x2 = coors[0];
-    y1 = coors[3];
-    y2 = coors[1];
-  } else {
-    x2 = coors[2];
-    x1 = coors[0];
-    y2 = coors[3];
-    y1 = coors[1];
-  }
-  int dx = x2 - x1, dy = y2 > y1?y2 - y1:y1 - y2;
-  char xMaj = dx > dy;
-  int x = x1, y = y1;
-  int acc = dx/2;
-  int step = y1 < y2 ? 1 : -1;
-  lock_surface();
-  if (xMaj) {
-    while (x <= x2) {
-      setpix(x, y, color, 0);
-      acc -= dy;
-      if (acc < 0) {
-        y += step;
-        acc += dx;
-      }
-      x++;
-    }
-  } else {
-    int acc = dy/2;
-    char up = y1 < y2;
-    while (up ? y <= y2 : y >= y2) {
-      setpix(x, y, color, 0);
-      acc -= dx;
-      if (acc < 0) {
-        x++;
-        acc += dy;
-      }
-      y += step;
-    }
-  }
-  unlock_surface();
-}
-
 // rendering functions
 void renderppm(char *path) {
   FILE *out = fopen(path, "w");

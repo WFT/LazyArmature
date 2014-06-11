@@ -56,8 +56,6 @@ uint32_t rgb(int r, int g, int b);
 //scale xy of world coordinates to fit screen
 void map_coors(double *x, double *y);
 
-void dline(int *coors, uint32_t color);
-
 // render screen to ppm
 void renderppm(char *path);
 
