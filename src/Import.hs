@@ -3,6 +3,7 @@ module Import where
 import Foreign.C
 import Foreign.Ptr
 
+foreign import ccall "should_quit" checkQuit :: IO CChar
 foreign import ccall "set_screen" setScreen ::
   CDouble -> CDouble -> CDouble -> CDouble -> IO ()
 foreign import ccall "init_live_render" initDisplay ::
@@ -17,6 +18,8 @@ foreign import ccall "mat_construct" constructMatrix ::
   CInt -> CInt -> IO (Ptr m)
 foreign import ccall "mat_destruct" destructMatrix ::
   Ptr m -> IO ()
+foreign import ccall "mat_multiply" (*) ::
+  Ptr m -> Ptr m -> IO (Ptr m)
 foreign import ccall "mat_add_column" addColumn ::
   Ptr m -> Ptr CDouble -> IO ()
 foreign import ccall "mat_get_cell" getCell ::

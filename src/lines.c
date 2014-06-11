@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "lines.h"
@@ -318,6 +319,7 @@ void draw_triangle(KZ_Point a, KZ_Point b, KZ_Point c) {
 	       || (shorti * lower_inc >= lower_count
 		   && long_segment[longi].y > mid_y)));
   }
+  draw_horizontal(lower_segment[shorti], long_segment[longi]);
 #endif
 
   
@@ -347,7 +349,6 @@ void draw_triangle(KZ_Point a, KZ_Point b, KZ_Point c) {
 #endif
   
 #if DRAW_VERTICES
-  a.r = b.r = c.r = -1;
   a.kr = b.kr = c.kr = VERTICES_RED;
   a.kg = b.kg = c.kg = VERTICES_BLUE;
   a.kb = b.kb = c.kb = VERTICES_GREEN;
