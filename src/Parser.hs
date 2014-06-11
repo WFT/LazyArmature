@@ -22,6 +22,8 @@ data Maybe a = Nothing | Just a
 
 data Command = 	Cube (Transform Double) (Transform Double) (Transform Double) 
 		| Sphere (Val Double) (Val Double) (Transform Double) (Transform Double) (Transform Double)
+		| Joint String (Transform Double)
+		| Bone String [Command] String
 		| Transformation Method (Transform Double)
 		| Save String
 		| Restore String
@@ -73,7 +75,12 @@ comThenDoubles n s = do
 	many space
 	count n $ many space >> doubleVal
 
-parseContents :: Parser [Command] --broken
+parseJoint :: Parser Command
+parseJoint = do 
+	(x:y:z:_) <- comThenDoubles 3 "joint"
+	return $ Joint (x,y,z)
+
+parseContents :: Parser [Command]
 parseContents = parseCommand `sepBy` many newline
 
 parseCommand :: Parser Command
