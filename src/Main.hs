@@ -18,8 +18,6 @@ main = do
   --render m eye color
   spin m eye color 10
   destructMatrix m
-  putStrLn "Enter to exit..."
-  getLine
 
 spin :: Ptr m -> Ptr CDouble -> Ptr m -> Int -> IO ()
 spin faces eye colors delay = do
