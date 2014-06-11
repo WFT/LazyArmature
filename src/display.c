@@ -32,7 +32,7 @@ char init_live_render(int w, int h) {
     log_SDL_error("SDL_Init()");
     return 1;
   }
-  win = SDL_CreateWindow("Live Rendering 3D Graphics",
+  win = SDL_CreateWindow("LazyArmature",
                          SDL_WINDOWPOS_UNDEFINED,
                          SDL_WINDOWPOS_UNDEFINED, w, h,
                          SDL_WINDOW_SHOWN);
