@@ -5,6 +5,8 @@
 // one of each for drawing -- nothing more complicated required
 SDL_Window *win = NULL;
 SDL_Surface *surface = NULL;
+SDL_Renderer *ren = NULL;
+SDL_Texture *tex = NULL;
 
 // the kz_buf for lighting + z-buf (to later be pushed to screen)
 KZ_Point **kz_buf;
@@ -30,17 +32,28 @@ char init_live_render(int w, int h) {
     log_SDL_error("SDL_Init()");
     return 1;
   }
-  win = SDL_CreateWindow("LazyArmature",
+  win = SDL_CreateWindow("Live Rendering 3D Graphics",
                          SDL_WINDOWPOS_UNDEFINED,
                          SDL_WINDOWPOS_UNDEFINED, w, h,
-                         SDL_WINDOW_RESIZABLE);
+                         SDL_WINDOW_SHOWN);
   if (!win) {
     log_SDL_error("SDL_CreateWindow()");
     return 1;
   }
-  surface = SDL_GetWindowSurface(win);
+  ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED |
+                           SDL_RENDERER_PRESENTVSYNC);
+  if (!ren) {
+    log_SDL_error("SDL_CreateRenderer()");
+    return 1;
+  }
+  surface = SDL_CreateRGBSurface(0, w, h, 32, 0, 0, 0, 0);
   if (!surface) {
     log_SDL_error("SDL_CreateRGBSurface()");
+    return 1;
+  }
+  tex = SDL_CreateTextureFromSurface(ren, surface);
+  if (!tex) {
+    log_SDL_error("SDL_CreateTextureFromSurface()");
     return 1;
   }
   clear_screen();
@@ -142,6 +155,7 @@ uint32_t rgb(int r, int g, int b) {
 void map_coors(double *x, double *y) {
   double sw = screen[2] - screen[0], sh = screen[3] - screen[1];
   double xscale = surface->w/sw, yscale = surface->h/sh;
+
   *x = ceil((*x - screen[0])*xscale);
   *y = -ceil((*y - screen[3])*yscale);
 }
@@ -217,10 +231,9 @@ void renderppm(char *path) {
 }
 
 void update_display() {
-  /*SDL_UpdateTexture(tex, NULL, surface->pixels, surface->pitch);
-    SDL_RenderCopy(ren, tex, NULL, NULL);
-    SDL_RenderPresent(ren);*/
-  SDL_UpdateWindowSurface(win);
+  SDL_UpdateTexture(tex, NULL, surface->pixels, surface->pitch);
+  SDL_RenderCopy(ren, tex, NULL, NULL);
+  SDL_RenderPresent(ren);
 }
 
 void clear_screen() {
@@ -241,6 +254,9 @@ void clear_pixel_buffer() {
 // call to clean up
 void finish_live_display() {
   SDL_DestroyWindow(win);
+  SDL_DestroyRenderer(ren);
+  SDL_DestroyTexture(tex);
+  SDL_FreeSurface(surface);
   SDL_Quit();
 }
 
