@@ -29,7 +29,6 @@ spin faces eye colors delay = do
       m <- tform Import.* f
       destructMatrix f
       threadDelay delay
-      print quit
       if (quit == 0) then spinIt m else return ()
     in spinIt dup
   
