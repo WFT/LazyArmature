@@ -3,7 +3,8 @@ SDLFLAGS = `sdl2-config --cflags --static-libs`
 STDFLAGS = -g -O3
 
 build: $(CENGINE)
-	ghc --make Main.hs -lSDL2 $(CENGINE)
+	ghc --make Main.hs -lSDL2 $(CENGINE) -o LazyArmature
+
 transform.o: transform.c transform.h
 	gcc transform.c -o transform.o -c $(STDFLAGS)
 
@@ -23,4 +24,4 @@ lines.o: lines.c lines.h options.h
 	gcc lines.c -o lines.o -c $(STDFLAGS)
 
 clean:
-	rm -r *.o *.hi
+	rm -r *.o *.hi LazyArmature
