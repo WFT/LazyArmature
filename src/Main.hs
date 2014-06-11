@@ -8,8 +8,8 @@ main = do
   setScreen (-10) (-10) 10 10
   initDisplay 300 300
   ambientLight 200 200 200
-  oform <- newArray [3, 3, 3, 0, 0, 0, 0, 0, 0]
-  m <- cube oform
+  oform <- newArray [4, 4, 4, 0, 0, 0, 0, 0, 0]
+  m <- sphere oform
   eye <- newArray [0, 0, 10]
   c1 <- newArray [1, 1, 0]
   c2 <- newArray [1, 0, 1]
