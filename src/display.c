@@ -51,7 +51,10 @@ char init_live_render(int w, int h) {
     log_SDL_error("SDL_CreateRGBSurface()");
     return 1;
   }
-  tex = SDL_CreateTextureFromSurface(ren, surface);
+  tex = SDL_CreateTexture(ren,
+			  SDL_PIXELFORMAT_RGB888,
+			  SDL_TEXTUREACCESS_STREAMING,
+			  w, h);
   if (!tex) {
     log_SDL_error("SDL_CreateTextureFromSurface()");
     return 1;
