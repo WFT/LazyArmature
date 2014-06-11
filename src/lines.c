@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include "lines.h"
@@ -48,11 +47,10 @@ static inline void draw_horizontal(KZ_Point p1, KZ_Point p2) {
     littleP.x = 0;
   char has_drawn = 0;
   double dx = greatP.x - littleP.x;
-  double pcount = point_count(littleP, greatP);
-  double radstep = (greatP.r - littleP.r) / pcount;
-  double rstep = (greatP.kr - littleP.kr) / pcount;
-  double gstep = (greatP.kg - littleP.kg) / pcount;
-  double bstep = (greatP.kb - littleP.kb) / pcount;
+  double radstep = (greatP.r - littleP.r) / dx;
+  double rstep = (greatP.kr - littleP.kr) / dx;
+  double gstep = (greatP.kg - littleP.kg) / dx;
+  double bstep = (greatP.kb - littleP.kb) / dx;
   KZ_Point p = littleP;
   while (p.x <= greatP.x) {
     if (pix_in_screen(p.x, p.y)) {
@@ -89,6 +87,7 @@ static inline int find_points(KZ_Point p1, KZ_Point p2, KZ_Point *points) {
   double rstep = (greatP.kr - littleP.kr) / pcount;
   double gstep = (greatP.kg - littleP.kg) / pcount;
   double bstep = (greatP.kb - littleP.kb) / pcount;
+
   if (pcount == 0)
     radstep = rstep = gstep = bstep = 0;
 
@@ -110,7 +109,7 @@ static inline int find_points(KZ_Point p1, KZ_Point p2, KZ_Point *points) {
   } else {
     int  acc = dy/2;
     char up = littleP.y < greatP.y;
-    while (up ? p.y <= greatP.y : p.y >= greatP.y) {
+    while (i < pcount) {//(up ? p.y <= greatP.y : p.y >= greatP.y) {
       points[i] = p;
       bresenham_step(&acc, &p.y, &p.x, dy, dx, ystep, 1);
       p.kr += rstep;
@@ -319,7 +318,6 @@ void draw_triangle(KZ_Point a, KZ_Point b, KZ_Point c) {
 	       || (shorti * lower_inc >= lower_count
 		   && long_segment[longi].y > mid_y)));
   }
-  draw_horizontal(lower_segment[shorti], long_segment[longi]);
 #endif
 
   
@@ -349,6 +347,7 @@ void draw_triangle(KZ_Point a, KZ_Point b, KZ_Point c) {
 #endif
   
 #if DRAW_VERTICES
+  a.r = b.r = c.r = -1;
   a.kr = b.kr = c.kr = VERTICES_RED;
   a.kg = b.kg = c.kg = VERTICES_BLUE;
   a.kb = b.kb = c.kb = VERTICES_GREEN;
