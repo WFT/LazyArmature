@@ -107,12 +107,12 @@ void renderperspective(Matrix *faces, double *eye, Matrix *colors) {
     p3.y = coors[5];
     draw_triangle(p1, p2, p3);
   }
-  flip_KZ_buffer();
 }
 
 void rendercyclops(Matrix *faces, double *eye, Matrix *colors) {
   clear_pixel_buffer();
   renderperspective(faces, eye, colors);
+  flip_KZ_buffer();
   update_display();
 }
 
@@ -141,27 +141,4 @@ Matrix *spinmat(int x, int y, int z) {
   mat_destruct(yr);
   mat_destruct(zr);
   return xyz;
-}
-
-void spincyclops(Matrix *faces, double *eye, Matrix *colors, int del) {
-  Matrix *xyz = spinmat(1, 1, 1);
-  Matrix *rot;
-  Matrix *unspun = faces;
-  faces = mat_multiply(xyz, faces);
-  clear_screen();
-  mixcolors(0);
-  while(!endspin()) {
-    rot = mat_multiply(xyz, faces);
-    mat_destruct(faces);
-    faces = rot;
-    renderperspective(faces, eye, colors);
-    SDL_Delay(del);
-    update_display();
-    clear_pixel_buffer();
-  }
-  clear_screen();
-  printf("Spin finished... Resetting display.\n");
-  renderperspective(unspun, eye, colors);
-  mat_destruct(xyz);
-  mat_destruct(rot);
 }
