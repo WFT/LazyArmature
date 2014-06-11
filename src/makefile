@@ -1,9 +1,15 @@
-CENGINE = transform.o objects.o display.o render.o matrix.o lines.o
-SDLFLAGS = `sdl2-config --cflags --static-libs`
+CENGINE = transform.o objects.o display.o matrix.o lines.o render.o
+SDLFLAGS = `sdl2-config --cflags --libs`
 STDFLAGS = -g -O3
 
-build: $(CENGINE)
-	ghc --make Main.hs -lSDL2 $(CENGINE) -o LazyArmature
+build: libengine.a Main.hs Import.o
+	ghc --make Main.hs -lSDL2 libengine.a -o LazyArmature -O
+
+Import.o: Import.hs
+	ghc -c Import.hs
+
+libengine.a: $(CENGINE)
+	ar rcs libengine.a $(CENGINE)
 
 transform.o: transform.c transform.h
 	gcc transform.c -o transform.o -c $(STDFLAGS)
@@ -24,4 +30,4 @@ lines.o: lines.c lines.h options.h
 	gcc lines.c -o lines.o -c $(STDFLAGS)
 
 clean:
-	rm -r *.o *.hi LazyArmature
+	rm -r *.o *.hi *.a LazyArmature

@@ -116,21 +116,6 @@ void rendercyclops(Matrix *faces, double *eye, Matrix *colors) {
   update_display();
 }
 
-/*
-void renderstereo(Matrix *faces, double *eyes) {
-  clear_pixel_buffer();
-
-  // left -- red
-  renderperspective(faces, eyes, rgb(127, 0, 0));
-
-  // right -- cyan
-  mixcolors(1);
-  renderperspective(faces, eyes+3, rgb(0, 127, 127));
-  mixcolors(0);
-
-  update_display();
-  }*/
-
 char endspin() {
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
@@ -180,37 +165,3 @@ void spincyclops(Matrix *faces, double *eye, Matrix *colors, int del) {
   mat_destruct(xyz);
   mat_destruct(rot);
 }
-
-/*
-void spinstereo(Matrix *faces, double *eyes, int del) {
-  Matrix *xyz = spinmat(1, 1, 1);
-  double *el = eyes;
-  double *er = eyes + 3;
-  Matrix *rot;
-  Matrix *unspun = faces;
-  faces = mat_multiply(xyz, faces);
-  uint32_t red = rgb(127, 0, 0);
-  uint32_t cyan = rgb(0, 127, 127);
-  clear_screen();
-  while(!endspin()) {
-    rot = mat_multiply(xyz, faces);
-    mat_destruct(faces);
-    faces = rot;
-    renderperspective(faces, el, red);
-    mixcolors(1);
-    renderperspective(faces, er, cyan);
-    mixcolors(0);
-    SDL_Delay(del);
-    update_display();
-    clear_pixel_buffer();
-  }
-  clear_screen();
-  printf("Spin finished... Resetting display.\n");
-  renderperspective(unspun, el, red);
-  mixcolors(1);
-  renderperspective(unspun, el, cyan);
-  mixcolors(0);
-  mat_destruct(xyz);
-  mat_destruct(rot);
-}
-*/
