@@ -47,10 +47,11 @@ static inline void draw_horizontal(KZ_Point p1, KZ_Point p2) {
     littleP.x = 0;
   char has_drawn = 0;
   double dx = greatP.x - littleP.x;
-  double radstep = (greatP.r - littleP.r) / dx;
-  double rstep = (greatP.kr - littleP.kr) / dx;
-  double gstep = (greatP.kg - littleP.kg) / dx;
-  double bstep = (greatP.kb - littleP.kb) / dx;
+  double pcount = point_count(littleP, greatP);
+  double radstep = (greatP.r - littleP.r) / pcount;
+  double rstep = (greatP.kr - littleP.kr) / pcount;
+  double gstep = (greatP.kg - littleP.kg) / pcount;
+  double bstep = (greatP.kb - littleP.kb) / pcount;
   KZ_Point p = littleP;
   while (p.x <= greatP.x) {
     if (pix_in_screen(p.x, p.y)) {

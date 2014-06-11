@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OPTIONS_H
+#define OPTIONS_H
 
 // Triangle culling
 #define ENABLE_CULLING 1
@@ -16,3 +17,4 @@
 #define EDGE_RED 1
 #define EDGE_GREEN 0
 #define EDGE_BLUE 1
+#endif

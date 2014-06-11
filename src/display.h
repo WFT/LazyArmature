@@ -1,6 +1,7 @@
+#ifndef DISPLAY_H
+#define DISPLAY_H
 #include <inttypes.h>
 #include "matrix.h"
-#pragma once
 
 // a struct to make lighting models + z-buffering possible
 typedef struct kz_point {
@@ -21,6 +22,9 @@ double *screen;
 
 // returns 0 on success, 1 on fail and prints error
 char init_live_render(int w, int h);
+
+void set_screen(double xmin, double ymin,
+                double xmax, double ymax);
 
 // setting a pixel for which this function returns 0 is undefined
 // will probably result in a segfault
@@ -69,3 +73,4 @@ void finish_live_display();
 
 // 1 on quit event, else 0
 char should_quit();
+#endif

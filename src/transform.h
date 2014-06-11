@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRANSFORM_H
+#define TRANSFORM_H
 #include <math.h>
 #include "matrix.h"
 
@@ -17,3 +18,4 @@ Matrix *rotate_z_mat(double rad);
 
 // the transform and old object will be free'd
 void apply_transform(Matrix *transform, Matrix **obj);
+#endif
