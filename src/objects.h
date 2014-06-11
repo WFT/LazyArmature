@@ -5,5 +5,6 @@
 // s s s r r r m m m
 Matrix *sphere_t(double *args);
 Matrix *box_t(double *args);
-Matrix *tri_file(char *fname, double *args);
+Matrix *color_for_object(Matrix *obj, double *c1,
+			 double *c2, double *c3);
 #endif

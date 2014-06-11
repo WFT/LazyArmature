@@ -39,6 +39,12 @@ inline void perspectify(double *x, double *y, double pz, double *eye) {
   *y = eye[1] - (eye[2] * (*y-eye[1]) / (pz - eye[2]));
 }
 
+void set_ambient_light(int r, int g, int b) {
+  ambient_red = r;
+  ambient_green = g;
+  ambient_blue = b;
+}
+
 void renderperspective(Matrix *faces, double *eye, Matrix *colors) {
   double coors[6];
   int c;

@@ -6,44 +6,6 @@
 Matrix *otransform(double *args);
 void addtriangle(Matrix *mat, double *p1, double *p2, double *p3);
 
-
-// We'll fix this later -- for now we've got to work on docs
-/*
-Matrix *tri_file(char *fname, double *args) {
-  FILE *f = fopen(fname, "r");
-  char linein[MAX_LINE];
-  linein[0] = '#';
-  while (linein[0] == '#') {
-    if (!fgets(linein, 99, f)) {
-      printf("File read failed.");
-      return;
-    }
-  }
-  int ctri = atoi(linein);
-  Matrix *obj = mat_construct(0, 4);
-  double col[4];
-  int argc, i;
-  char **list;
-  printf("adding %d triangles from file %s.\n", ctri, fname);
-  while (fgets(linein, MAX_LINE-1, f) && ctri > 0) {
-    if (linein[0] == '#') {
-      return;
-    }
-    list = parse_split(linein);
-    argc = parse_numwords(list) - 1;
-    for (i = 0; i < argc && list[i]; i++) {
-      printf("gothere%s\n", list[i]);
-      col[i] = strtod(list[i], NULL);
-    }
-    mat_add_column(obj, col);
-    ctri--;
-  }
-  Matrix *t  = otransform(args);
-  Matrix *ret = mat_multiply(t, obj);
-  return ret;
-}
-*/
-
 Matrix *sphere_t(double *args) {
   int nVertices = 25;
   double lrad = (M_PI)/ nVertices;
@@ -139,6 +101,26 @@ Matrix *box_t(double *args) {
   mat_destruct(cube);
   mat_destruct(t);
   return ret;
+}
+
+Matrix *color_for_object(Matrix *obj, double *c1,
+			 double *c2, double *c3) {
+  Matrix *c = mat_construct(obj->cols, 3);
+  int i;
+  for (i = 0; i < obj->cols; i++) {
+    switch (i%3) {
+    case 0:
+      mat_set_column(c, i, c1);
+      break;
+    case 1:
+      mat_set_column(c, i, c2);
+      break;
+    case 2:
+      mat_set_column(c, i, c3);
+      break;
+    }
+  }
+  return c;
 }
 
 // turn the arguments into a transformation matrix

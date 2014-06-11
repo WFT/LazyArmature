@@ -8,6 +8,8 @@ uint32_t ambient_red;
 uint32_t ambient_green;
 uint32_t ambient_blue;
 
+void set_ambient_light(int r, int g, int b);
+
 // renders a single perspective -- access through render functions below
 void renderperspective(Matrix *faces, double *eye, Matrix *colors);
 
