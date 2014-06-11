@@ -16,7 +16,7 @@ main = do
   c3 <- newArray [1, 1, 1]
   color <- colorsForObject m c1 c2 c3
   --render m eye color
-  spin m eye color 10
+  spin m eye color 1300
   destructMatrix m
 
 spin :: Ptr m -> Ptr CDouble -> Ptr m -> Int -> IO ()
