@@ -54,6 +54,35 @@ Matrix * rotate_z_mat(double rad) {
 void apply_transform(Matrix *transform, Matrix **obj) {
   Matrix *ret = mat_multiply(transform, *obj);
   mat_destruct(*obj);
+  *obj = ret;
+}
+
+void apply_transform_free(Matrix *transform, Matrix **obj) {
+  Matrix *ret = mat_multiply(transform, *obj);
+  mat_destruct(*obj);
   mat_destruct(transform);
   *obj = ret;
+}
+
+void apply_transform_many(Matrix *transform, Matrix **obj) {
+  int p = 0;
+  Matrix *ret;
+  while (obj[p]) {
+    ret = mat_multiply(transform, obj[p]);
+    mat_destruct(obj[p]);
+    obj[p] = ret;
+    p++;
+  }
+}
+
+void apply_transform_many_free(Matrix *transform, Matrix **obj) {
+  int p = 0;
+  Matrix *ret;
+  while (obj[p]) {
+    ret = mat_multiply(transform, obj[p]);
+    mat_destruct(obj[p]);
+    obj[p] = ret;
+    p++;
+  }
+  mat_destruct(transform);
 }

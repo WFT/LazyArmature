@@ -18,4 +18,8 @@ Matrix *rotate_z_mat(double rad);
 
 // the transform and old object will be free'd
 void apply_transform(Matrix *transform, Matrix **obj);
+void apply_transform_free(Matrix *transform, Matrix **obj);
+// **obj is NULL terminated
+void apply_transform_many(Matrix *transform, Matrix **obj);
+void apply_transform_many_free(Matrix *transform, Matrix **obj);
 #endif
