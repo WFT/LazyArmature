@@ -4,14 +4,20 @@ import Import
 import Foreign.Ptr
 import Foreign.C
 
-data Joint = Bone { x :: CDouble
-                  , y :: CDouble
-                  , z :: CDouble
-                  }
+data Joint = Joint { x :: CDouble
+                   , y :: CDouble
+                   , z :: CDouble
+                   }
 
-data Bone = Lig { start :: Joint
-                , mesh :: (Ptr Matrix)
-                , color :: (Ptr Matrix)
-                , end :: Joint
+data Bone = Lig { parent :: Bone
+                , mesh :: Ptr Matrix
+                , color :: Ptr Matrix
+                , children :: [Bone]
+                , tailJoint :: Joint
                 }
-
+            | Nub { headJoint :: Joint
+                  , mesh :: Ptr Matrix
+                  , color :: Ptr Matrix
+                  , children :: [Bone]
+                  , tailJoint :: Joint
+                  }
