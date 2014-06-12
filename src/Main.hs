@@ -23,6 +23,7 @@ main = do
   spin m eye colorm 1300
   destructMatrix m
   getLine
+  closeDisplay
 
 renderList :: [Ptr m] -> Ptr CDouble -> [Ptr m] -> IO ()
 renderList faces eye colors = do
