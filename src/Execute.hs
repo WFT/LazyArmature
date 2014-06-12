@@ -5,15 +5,10 @@ module Execute (
 ) where
 
 import Parser
-import OpenGL
 import Operations
 import Matrix
 import Matrix3D
 import Sequence
-import RenderVector
-
-import Data.Vector.Storable (Vector)
-import qualified Data.Vector.Storable as V
 
 import Data.Map (Map)
 import qualified Data.Map as ML
@@ -26,18 +21,21 @@ import Control.Monad.IO.Class
 
 data RenderState m a d = RenderState {_fnum :: Int, 
 				_varys :: Map String [Sequence Double],
-				_currentTransform :: m a,
-				_transformations :: Map String (m a),
-				_renderable :: Renderable m a d,
+				_currentTransform :: Ptr,
+				_transformations :: Map String Ptr,
+				_currentTri :: Ptr,
+				_bones :: [Bone Ptr],
 				_out :: Resolution Int,
-				_buffer :: Vector (d)}
+				}
 				deriving Show
+
 genState :: (V.Storable d) => Renderable ListMatrix Double d -> Vector d -> Resolution Int -> Int -> RenderState ListMatrix Double d
 genState renderable@(Renderable {_col=col}) v out  n= 
 	RenderState n (ML.fromList []) (identity 4 4) (ML.fromList []) 
 		renderable out $ v
 
 testTransformationString = "scale 1 1 2\nmove 2 0 0\n save basic\nrotate 1 1 1\ncube 1 1 1 0 0 0 0 0 0\nrestore basic\ncube 1 1 1 0 0 0 0 0 0"
+
 {-
 test :: [Command] -> IO (RenderState ListMatrix Double)
 test cs = execStateT (mapM_ runCommand cs) . genState 
@@ -45,6 +43,7 @@ test cs = execStateT (mapM_ runCommand cs) . genState
 	(Area (0,100) (0,100)) $
 	1 
 -}
+
 type Tform = (Double,Double,Double)
 
 				
