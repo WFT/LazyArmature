@@ -13,7 +13,7 @@
 #define VERTICES_BLUE 0
 #define VERTICES_GREEN 1
 
-#define DRAW_EDGES 1
+#define DRAW_EDGES 0
 #define EDGE_RED 1
 #define EDGE_GREEN 0
 #define EDGE_BLUE 1

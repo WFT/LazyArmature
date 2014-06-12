@@ -8,16 +8,27 @@ main = do
   setScreen (-10) (-10) 10 10
   initDisplay 300 300
   ambientLight 200 200 200
-  oform <- newArray [4, 4, 4, 0, 0, 0, 0, 0, 0]
+  oform <- newArray [3, 3, 3, 0, 0, 0, 1, 1, 0]
+  --oforn <- newArray [3, 3, 3, 0, 0, 0, -1, -1, 0]
   m <- sphere oform
+  --n <- cube oforn
   eye <- newArray [0, 0, 10]
   c1 <- newArray [1, 1, 0]
   c2 <- newArray [1, 0, 1]
   c3 <- newArray [1, 1, 1]
-  color <- colorsForObject m c1 c2 c3
-  --render m eye color
-  spin m eye color 1300
+  colorm <- colorsForObject m c1 c2 c3
+  --colorn <- colorsForObject n c1 c2 c3
+  --renderList [m, n] eye [colorm, colorn]
+  --render m eye colorm
+  spin m eye colorm 1300
   destructMatrix m
+  getLine
+
+renderList :: [Ptr m] -> Ptr CDouble -> [Ptr m] -> IO ()
+renderList faces eye colors = do
+  facep <- newArray0 nullPtr faces
+  colorp <- newArray0 nullPtr colors
+  renderSeries facep eye colorp
 
 spin :: Ptr m -> Ptr CDouble -> Ptr m -> Int -> IO ()
 spin faces eye colors delay = do
@@ -31,4 +42,5 @@ spin faces eye colors delay = do
       threadDelay delay
       if (quit == 0) then spinIt m else return ()
     in spinIt dup
+  destructMatrix tform
   

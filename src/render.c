@@ -142,3 +142,14 @@ Matrix *spinmat(int x, int y, int z) {
   mat_destruct(zr);
   return xyz;
 }
+
+void renderseries(Matrix **faces, double *eye, Matrix **colors) {
+  clear_pixel_buffer();
+  int p = 0;
+  while (faces[p]) {
+    renderperspective(faces[p], eye, colors[p]);
+    p++;
+  }
+  flip_KZ_buffer();
+  update_display();
+}

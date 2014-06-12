@@ -11,6 +11,8 @@ foreign import ccall "init_live_render" initDisplay ::
 foreign import ccall "finish_live_display" closeDisplay :: IO ()
 foreign import ccall "rendercyclops" render ::
   Ptr m -> Ptr CDouble -> Ptr m -> IO ()
+foreign import ccall "renderseries" renderSeries ::
+  Ptr pm -> Ptr CDouble -> Ptr pm -> IO ()
 foreign import ccall "spinmat" spinMatrix ::
   CInt -> CInt -> CInt -> IO (Ptr m)
 foreign import ccall "set_ambient_light" ambientLight ::
