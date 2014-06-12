@@ -25,13 +25,13 @@ main = do
   getLine
   closeDisplay
 
-renderList :: [Ptr m] -> Ptr CDouble -> [Ptr m] -> IO ()
+renderList :: [Ptr Matrix] -> Ptr CDouble -> [Ptr Matrix] -> IO ()
 renderList faces eye colors = do
   facep <- newArray0 nullPtr faces
   colorp <- newArray0 nullPtr colors
   renderSeries facep eye colorp
 
-spin :: Ptr m -> Ptr CDouble -> Ptr m -> Int -> IO ()
+spin :: Ptr Matrix -> Ptr CDouble -> Ptr Matrix -> Int -> IO ()
 spin faces eye colors delay = do
   tform <- spinMatrix 1 1 1
   dup <- tform Import.* faces
