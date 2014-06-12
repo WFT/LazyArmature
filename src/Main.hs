@@ -6,7 +6,7 @@ import Control.Concurrent
 
 main = do
   setScreen (-10) (-10) 10 10
-  initDisplay 300 300
+  initDisplay 1000 1000
   ambientLight 200 200 200
   oform <- newArray [3, 3, 3, 0, 0, 0, 0, 0, 0]
   --oforn <- newArray [3, 3, 3, 0, 0, 0, -1, -1, 0]
