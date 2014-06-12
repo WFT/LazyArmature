@@ -1,49 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "transform.h"
-#include "parse_util.h"
 #include "objects.h"
 
 Matrix *otransform(double *args);
 void addtriangle(Matrix *mat, double *p1, double *p2, double *p3);
-
-
-// We'll fix this later -- for now we've got to work on docs
-/*
-Matrix *tri_file(char *fname, double *args) {
-  FILE *f = fopen(fname, "r");
-  char linein[MAX_LINE];
-  linein[0] = '#';
-  while (linein[0] == '#') {
-    if (!fgets(linein, 99, f)) {
-      printf("File read failed.");
-      return;
-    }
-  }
-  int ctri = atoi(linein);
-  Matrix *obj = mat_construct(0, 4);
-  double col[4];
-  int argc, i;
-  char **list;
-  printf("adding %d triangles from file %s.\n", ctri, fname);
-  while (fgets(linein, MAX_LINE-1, f) && ctri > 0) {
-    if (linein[0] == '#') {
-      return;
-    }
-    list = parse_split(linein);
-    argc = parse_numwords(list) - 1;
-    for (i = 0; i < argc && list[i]; i++) {
-      printf("gothere%s\n", list[i]);
-      col[i] = strtod(list[i], NULL);
-    }
-    mat_add_column(obj, col);
-    ctri--;
-  }
-  Matrix *t  = otransform(args);
-  Matrix *ret = mat_multiply(t, obj);
-  return ret;
-}
-*/
 
 Matrix *sphere_t(double *args) {
   int nVertices = 25;
@@ -109,14 +70,14 @@ Matrix *sphere_t(double *args) {
 
 Matrix *box_t(double *args) {
   Matrix *cube = mat_construct(0, 4);
-  double tlf[4] = {-.5, .5, .5, 1};	// top left front
-  double tlb[4] = {-.5, .5, -.5, 1};	// top left back
-  double trf[4] = {.5, .5, .5, 1};	// top right front
-  double trb[4] = {.5, .5, -.5, 1};	// top right back
-  double blf[4] = {-.5, -.5, .5, 1};	// back left front
-  double blb[4] = {-.5, -.5, -.5, 1};	// back left back
-  double brf[4] = {.5, -.5, .5, 1};	// back right front
-  double brb[4] = {.5, -.5, -.5, 1};	// back right back
+  double tlf[4] = {-1, 1, 1, 1};	// top left front
+  double tlb[4] = {-1, 1, -1, 1};	// top left back
+  double trf[4] = {1, 1, 1, 1};	// top right front
+  double trb[4] = {1, 1, -1, 1};	// top right back
+  double blf[4] = {-1, -1, 1, 1};	// back left front
+  double blb[4] = {-1, -1, -1, 1};	// back left back
+  double brf[4] = {1, -1, 1, 1};	// back right front
+  double brb[4] = {1, -1, -1, 1};	// back right back
   // top face
   addtriangle(cube, tlf, trb, tlb);
   addtriangle(cube, tlf, trf, trb);
@@ -142,14 +103,34 @@ Matrix *box_t(double *args) {
   return ret;
 }
 
+Matrix *color_for_object(Matrix *obj, double *c1,
+			 double *c2, double *c3) {
+  Matrix *c = mat_construct(obj->cols, 3);
+  int i;
+  for (i = 0; i < obj->cols; i++) {
+    switch (i%3) {
+    case 0:
+      mat_set_column(c, i, c1);
+      break;
+    case 1:
+      mat_set_column(c, i, c2);
+      break;
+    case 2:
+      mat_set_column(c, i, c3);
+      break;
+    }
+  }
+  return c;
+}
+
 // turn the arguments into a transformation matrix
 // using the standard Sx Sy Sz Rx Ry Rz Mx My Mz
 Matrix *otransform(double *args) {
   Matrix *t = scale_mat(args[0], args[1], args[2]);
-  apply_transform(rotate_x_mat(args[3]), &t);
-  apply_transform(rotate_y_mat(args[4]), &t);
-  apply_transform(rotate_z_mat(args[5]), &t);
-  apply_transform(move_mat(args[6], args[7], args[8]), &t);
+  t = apply_transform_free(rotate_x_mat(TO_RAD(args[3])), t);
+  t = apply_transform_free(rotate_y_mat(TO_RAD(args[4])), t);
+  t = apply_transform_free(rotate_z_mat(TO_RAD(args[5])), t);
+  t = apply_transform_free(move_mat(args[6], args[7], args[8]), t);
   return t;
 }
 

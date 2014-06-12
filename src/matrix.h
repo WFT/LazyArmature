@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MATRIX_H
+#define MATRIX_H
 typedef struct matrix {
   int cols, rows;
   double **cells;
@@ -30,3 +31,4 @@ void mat_multinmat(struct matrix *a, struct matrix *b, struct matrix *res);
 void mat_extend(struct matrix *dest, struct matrix *src);
 
 void mat_resize(struct matrix *mat, int c, int r);
+#endif

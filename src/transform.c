@@ -51,9 +51,49 @@ Matrix * rotate_z_mat(double rad) {
   return ret;
 }
 
-void apply_transform(Matrix *transform, Matrix **obj) {
-  Matrix *ret = mat_multiply(transform, *obj);
-  mat_destruct(*obj);
+Matrix *rotate_xyz_point_mat(double xrad, double yrad, double zrad,
+			     double xpos, double ypos, double zpos) {
+  Matrix *m1 = move_mat(-xpos, -ypos, -zpos);
+  Matrix *m2 = move_mat(xpos, ypos, zpos);
+  Matrix *t = apply_transform_free(rotate_x_mat(TO_RAD(xrad)), m1);
+  t = apply_transform_free(rotate_y_mat(TO_RAD(yrad)), t);
+  t = apply_transform_free(rotate_z_mat(TO_RAD(zrad)), t);
+  t = apply_transform_free(m2, t);
+  return t;
+}
+
+Matrix *apply_transform(Matrix *transform, Matrix *obj) {
+  Matrix *ret = mat_multiply(transform, obj);
+  mat_destruct(obj);
+  return ret;
+}
+
+Matrix *apply_transform_free(Matrix *transform, Matrix *obj) {
+  Matrix *ret = mat_multiply(transform, obj);
+  mat_destruct(obj);
   mat_destruct(transform);
-  *obj = ret;
+  return ret;
+}
+
+void apply_transform_many(Matrix *transform, Matrix **obj) {
+  int p = 0;
+  Matrix *ret;
+  while (obj[p]) {
+    ret = mat_multiply(transform, obj[p]);
+    mat_destruct(obj[p]);
+    obj[p] = ret;
+    p++;
+  }
+}
+
+void apply_transform_many_free(Matrix *transform, Matrix **obj) {
+  int p = 0;
+  Matrix *ret;
+  while (obj[p]) {
+    ret = mat_multiply(transform, obj[p]);
+    mat_destruct(obj[p]);
+    obj[p] = ret;
+    p++;
+  }
+  mat_destruct(transform);
 }
