@@ -41,9 +41,9 @@ foreign import ccall "pmat" pmat ::
 
 -- transform.c/h
 foreign import ccall "apply_transform_free" applyTransformFree ::
-  Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
+  Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
 foreign import ccall "apply_transform" applyTransform ::
-  Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
+  Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
 foreign import ccall "apply_transform_many" applyManyTransform ::
   Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
 foreign import ccall "apply_transform_many_free" applyManyTransformFree ::
@@ -59,7 +59,8 @@ foreign import ccall "rotate_y_mat" yRotateMatrix ::
   CDouble -> IO (Ptr Matrix)
 foreign import ccall "rotate_z_mat" zRotateMatrix ::
   CDouble -> IO (Ptr Matrix)
-
+foreign import ccall "rotate_xyz_point_mat" xyzAboutPointMatrix ::
+  CDouble -> CDouble -> CDouble -> CDouble -> CDouble -> CDouble -> IO (Ptr Matrix)
 
 -- objects.c/h
 foreign import ccall "box_t" cube ::

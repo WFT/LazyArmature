@@ -51,17 +51,39 @@ Matrix * rotate_z_mat(double rad) {
   return ret;
 }
 
-void apply_transform(Matrix *transform, Matrix **obj) {
-  Matrix *ret = mat_multiply(transform, *obj);
-  mat_destruct(*obj);
-  *obj = ret;
+Matrix *rotate_xyz_point_mat(double xrad, double yrad, double zrad,
+			     double xpos, double ypos, double zpos) {
+  Matrix *m1 = move_mat(-xpos, -ypos, -zpos);
+  Matrix *m2 = move_mat(xpos, ypos, zpos);
+  Matrix *x = rotate_x_mat(xrad);
+  Matrix *y = rotate_y_mat(yrad);
+  Matrix *t = mat_multiply(x, y);
+  mat_destruct(x);
+  mat_destruct(y);
+  Matrix *z = rotate_z_mat(zrad);
+  Matrix *xyz = mat_multiply(t, z);
+  mat_destruct(z);
+  mat_destruct(t);
+  t = mat_multiply(m1, xyz);
+  mat_destruct(m1);
+  mat_destruct(xyz);
+  Matrix *ret = mat_multiply(t, m2);
+  mat_destruct(m2);
+  mat_destruct(t);
+  return ret;
 }
 
-void apply_transform_free(Matrix *transform, Matrix **obj) {
-  Matrix *ret = mat_multiply(transform, *obj);
-  mat_destruct(*obj);
+Matrix *apply_transform(Matrix *transform, Matrix *obj) {
+  Matrix *ret = mat_multiply(transform, obj);
+  mat_destruct(obj);
+  return ret;
+}
+
+Matrix *apply_transform_free(Matrix *transform, Matrix *obj) {
+  Matrix *ret = mat_multiply(transform, obj);
+  mat_destruct(obj);
   mat_destruct(transform);
-  *obj = ret;
+  return ret;
 }
 
 void apply_transform_many(Matrix *transform, Matrix **obj) {
