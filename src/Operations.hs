@@ -1,4 +1,4 @@
-module Operations (
+module Wrapper (
 	cube,
 	sphere,
 	renderParallel,
@@ -7,9 +7,8 @@ module Operations (
 --	writePPM,
 --	writeFrame
 	) where
-import Matrix
-import Matrix3D
-import Objects hiding (sphere)
+
+import Import
 
 import Text.Printf
 
@@ -38,8 +37,17 @@ projectGeometry eye buffer@
 		_triangleMatrix = projCull eye mtri
 	}
 
-cube :: (Matrix m) => Tform -> Tform -> Tform -> [m Double]
-cube s r m = (flip map) unitCube $ transform (collate [scale s, rotate r, move m])
+cube :: Tform -> Tform -> Tform -> IO (Ptr ())
+cube (sx,sy,sz) (rx,ry,rz) (x,y,z) = fmap c_cube $ newArray [sx,sy,sz,rx,ry,rz,x,y,z]
+
+sphere :: Tform -> Tform
+sphere (sx,sy,sz) (rx,ry,rz) (x,y,z) = fmap c_sphere $ newArray [sx,sy,sz,rx,ry,rz,x,y,z]
+
+extendMatrix :: Ptr () -> Ptr () -> IO (Ptr ())
+extendMatrix mdest msrc = do 
+	c_extendMatrix mdest msrc
+	destructMatrix msrc
+	return mdest
 
 sphere :: (Matrix m) => Double -> Double -> Tform -> Tform -> Tform -> [m Double]
 sphere rad divs s r m = (flip map) (sphereTri rad (floor divs)) 
