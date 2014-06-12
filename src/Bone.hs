@@ -21,3 +21,9 @@ data Bone = Lig { parent :: Bone
                   , children :: [Bone]
                   , tailJoint :: Joint
                   }
+
+childMeshes :: Bone -> [Ptr Matrix]
+childMeshes
+  | Bone _ m _ [] _ = [m]
+  | Bone _ m _ kids _ = m:(concat $ map childMeshes kids)
+                     
