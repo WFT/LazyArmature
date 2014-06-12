@@ -8,7 +8,7 @@ main = do
   setScreen (-10) (-10) 10 10
   initDisplay 300 300
   ambientLight 200 200 200
-  oform <- newArray [3, 3, 3, 0, 0, 0, 1, 1, 0]
+  oform <- newArray [3, 3, 3, 0, 0, 0, 0, 0, 0]
   --oforn <- newArray [3, 3, 3, 0, 0, 0, -1, -1, 0]
   m <- sphere oform
   --n <- cube oforn
@@ -17,11 +17,13 @@ main = do
   c2 <- newArray [1, 0, 1]
   c3 <- newArray [1, 1, 1]
   colorm <- colorsForObject m c1 c2 c3
+  rxyz <- xyzAboutPointMatrix 30 30 0 (-10) (-10) 0
+  obj <- applyTransformFree rxyz m
   --colorn <- colorsForObject n c1 c2 c3
   --renderList [m, n] eye [colorm, colorn]
-  --render m eye colorm
-  spin m eye colorm 1300
-  destructMatrix m
+  render obj eye colorm
+  -- spin m eye colorm 1300
+  destructMatrix obj
   getLine
   closeDisplay
 

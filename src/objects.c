@@ -127,10 +127,10 @@ Matrix *color_for_object(Matrix *obj, double *c1,
 // using the standard Sx Sy Sz Rx Ry Rz Mx My Mz
 Matrix *otransform(double *args) {
   Matrix *t = scale_mat(args[0], args[1], args[2]);
-  apply_transform_free(rotate_x_mat(TO_RAD(args[3])), &t);
-  apply_transform_free(rotate_y_mat(TO_RAD(args[4])), &t);
-  apply_transform_free(rotate_z_mat(TO_RAD(args[5])), &t);
-  apply_transform_free(move_mat(args[6], args[7], args[8]), &t);
+  t = apply_transform_free(rotate_x_mat(TO_RAD(args[3])), t);
+  t = apply_transform_free(rotate_y_mat(TO_RAD(args[4])), t);
+  t = apply_transform_free(rotate_z_mat(TO_RAD(args[5])), t);
+  t = apply_transform_free(move_mat(args[6], args[7], args[8]), t);
   return t;
 }
 
