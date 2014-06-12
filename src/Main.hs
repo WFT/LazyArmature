@@ -6,7 +6,7 @@ import Control.Concurrent
 
 main = do
   setScreen (-10) (-10) 10 10
-  initDisplay 1000 1000
+  initDisplay 500 500
   ambientLight 200 200 200
   oform <- newArray [3, 3, 3, 0, 0, 0, 0, 0, 0]
   --oforn <- newArray [3, 3, 3, 0, 0, 0, -1, -1, 0]
@@ -17,7 +17,7 @@ main = do
   c2 <- newArray [1, 0, 1]
   c3 <- newArray [1, 1, 1]
   colorm <- colorsForObject m c1 c2 c3
-  rxyz <- xyzAboutPointMatrix 30 0 0 (-8) (-8) 0
+  rxyz <- xyzAboutPointMatrix 30 0 0 (-10) (-10) 0
   obj <- applyTransformFree rxyz m
   --colorn <- colorsForObject n c1 c2 c3
   --renderList [m, n] eye [colorm, colorn]
