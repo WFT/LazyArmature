@@ -37,15 +37,20 @@ getValue f m (Variable s) = fromMaybe (error $ "var not found: " ++ s) $
 getTransform :: (b -> a) -> Map String b -> Transform a -> (a,a,a)
 getTransform f m (a, b, c) = (getValue f m a, getValue f m b, getValue f m c)
 
-transformApplyTri :: Ptr Matrix -> StateT RenderState IO ()
-transformApplyTri tris = do
+transformApplyTri :: Ptr Matrix -> Ptr Matrix -> StateT RenderState IO ()
+transformApplyTri tris cols = do
 	ss@(RenderState {_currentTransform = cst,
-			_currentTri = ctri}) <- get
+			_currentTri = ctri,
+			_colors = ccols}) <- get
 	nTri <- liftIO $ extendMatrix ctri =<< applyTransform cst tris
-	put $ ss { _currentTri = nTri}
+	nCols <- liftIO $ extendMatrix ccols cols
+	put $ ss { _currentTri = nTri,_colors = nCols}
 
 
 --The funky bits at the beginning of each op are extracting data from the Val's, whcih are potentially variable
+acol = (0,0,1)
+bcol = (1,1,0)
+ccol = (1,0,0)
 runCommand :: Command -> StateT RenderState IO ()
 
 runCommand (Cube ts tr tm) = do
@@ -54,22 +59,34 @@ runCommand (Cube ts tr tm) = do
 		gt = getTransform (seqsVal fnum) vs
 		(s,r,m) = (gt ts,gt tr,gt tm)
 	ntri <- liftIO $ cube s r m
-	transformApplyTri ntri
+	cols <- liftIO $ colorOfObject ntri acol bcol ccol
+	transformApplyTri ntri cols
 
 
-runCommand (Sphere rad div ts tr tm) = do
+runCommand (Sphere ts tr tm) = do
 	RenderState {_fnum = fnum, _varys = vs} <- get
 	let 	
 		gt = getTransform (seqsVal fnum) vs
 		(s,r,m) = (gt ts,gt tr,gt tm)
 	ntri <- liftIO $ sphere s r m
-	transformApplyTri ntri
+	cols <- liftIO $ colorOfObject ntri acol bcol ccol
+	transformApplyTri ntri cols
 
 runCommand (RenderCyclops te) = do
 	r@(RenderState {_fnum = fnum,_varys = vs}) <- get
 	let
 		e = getTransform (seqsVal fnum) vs te
+	liftIO $ putStrLn "about to run"
 	liftIO $ renderState r e
+	liftIO $ putStrLn "about to run"
+
+runCommand (AddVar s vv vf) = do
+	RenderState {_varys = vs, _fnum = fnum} <- get
+	let 
+		g = getValue (seqsVal fnum) vs
+		f x (a,b) = (x a, x b)
+		(vals,frames) = (f g vv,f (floor . g) vf)
+	modify $ \ss -> ss {_varys = ML.insertWith (++) s [Anim3D frames vals] vs}
 {-
 runCommand (Transformation mode st) = do
 	RenderState {_varys = vs, _fnum = fnum, _currentTransform = cst} <- get
@@ -87,13 +104,6 @@ runCommand (Restore s) = do
 	modify $ \ss -> ss {_currentTransform = fromMaybe (error "transform not found") $
 		ML.lookup s $ _transformations ss}
 
-runCommand (AddVar s vv vf) = do
-	RenderState {_varys = vs, _fnum = fnum} <- get
-	let 
-		g = getValue (seqsVal fnum) vs
-		f x (a,b) = (x a, x b)
-		(vals,frames) = (f g vv,f (floor . g) vf)
-	modify $ \ss -> ss {_varys = ML.insertWith (++) s [Anim3D frames vals] vs}
 
 runCommand RenderParallel = do
 	RenderState {_renderable = renderable,_out = out,_buffer = buf} <- get

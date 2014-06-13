@@ -20,7 +20,7 @@ data Bone = Lig { parent :: Bone
             | Nub { headJoint :: Joint
                   , children :: [Bone]
                   } deriving (Show)
-
+{-
 -- untested ...
 meshAndChildren :: Bone -> [Ptr Matrix]
 meshAndChildren (Lig _ m _ kids _) = m : concatMap meshAndChildren kids
@@ -48,14 +48,7 @@ renderBoneAndChildren b (ex, ey, ez) = do
       colors = colorAndChildren b
       in renderList meshes eye colors
   free eye
-
+-}
 -- ...untested
 
 -- tested:
-renderList :: [Ptr Matrix] -> Ptr CDouble -> [Ptr Matrix] -> IO ()
-renderList faces eye colors = do
-  facep <- newArray0 nullPtr faces
-  colorp <- newArray0 nullPtr colors
-  renderSeries facep eye colorp
-  free facep
-  free colorp

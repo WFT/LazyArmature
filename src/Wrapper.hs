@@ -3,30 +3,34 @@ module Wrapper (
 	Matrix,
 	cube,
 	sphere,
+	colorOfObject,
 	renderState,
+	renderList,
+	spin,
 	extendMatrix,
+	genState,
 --	writePPM,
 --	writeFrame
 	) where
 
 --import Import
+import System.IO
+
+import Foreign
+import Foreign.C
+import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
+
+import Control.Concurrent
+
+import Data.Map (Map,fromList)
+import Data.List (sort)
 
 import Text.Printf
 
-import Foreign
-import Foreign.Marshal.Array
-
-import Bones
-
-import Data.Map (Map,fromList)
-
-import System.IO
-
-import Data.List (sort)
-
-
-import Sequence
 import Import
+import Bones
+import Sequence
 
 type Tform = (Double,Double,Double)
 type Eye = Tform
@@ -63,6 +67,15 @@ sphere :: Tform -> Tform -> Tform -> IO (Ptr Matrix)
 sphere (sx,sy,sz) (rx,ry,rz) (x,y,z) = c_sphere =<<
 	(newArray $ map realToFrac [sx,sy,sz,rx,ry,rz,x,y,z])
 
+colorOfObject :: Ptr Matrix -> Tform -> Tform -> Tform -> IO (Ptr Matrix)
+colorOfObject obj a b c = do
+	ac <- colArr a
+	bc <- colArr b
+	cc <- colArr c
+	colorsForObject obj ac bc cc
+	where
+		colArr (r,g,b) = newArray $ map realToFrac [r,g,b]
+
 extendMatrix :: Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
 extendMatrix mdest msrc = do 
 	c_extendMatrix mdest msrc
@@ -71,15 +84,32 @@ extendMatrix mdest msrc = do
 
 
 renderState :: RenderState -> Tform -> IO ()
-renderState (RenderState {_currentTri = mesh, _colors = cs,
-		_bone =  root}) 
+renderState (RenderState {_currentTri = mesh, _colors = cs}) 
 		(ex,ey,ez) = do
-	m <- newArray $ mesh : meshAndChildren root
-	c <- newArray $ cs : colorAndChildren root
 	e <- newArray $ map realToFrac [ex,ey,ez] -- Fix later
-	renderSeries m e c
+	renderList [mesh] e [cs]
 
+renderList :: [Ptr Matrix] -> Ptr CDouble -> [Ptr Matrix] -> IO ()
+renderList faces eye colors = do
+  facep <- newArray0 nullPtr faces
+  colorp <- newArray0 nullPtr colors
+  renderSeries facep eye colorp
+  free facep
+  free colorp
 
+spin :: Ptr Matrix -> Ptr CDouble -> Ptr Matrix -> Int -> IO ()
+spin faces eye colors delay = do
+  tform <- spinMatrix 1 1 1
+  dup <- tform Import.* faces
+  let spinIt f = do
+      render f eye colors
+      quit <- checkQuit
+      m <- tform Import.* f
+      destructMatrix f
+      threadDelay delay
+      if (quit == 0) then spinIt m else return ()
+    in spinIt dup
+  destructMatrix tform
 
 {-
 writePPM :: String -> Resolution Int -> Vector (Color Int) -> IO ()

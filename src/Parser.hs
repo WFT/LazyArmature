@@ -21,7 +21,7 @@ data Maybe a = Nothing | Just a
 
 
 data Command = 	Cube (Transform Double) (Transform Double) (Transform Double) 
-		| Sphere (Val Double) (Val Double) (Transform Double) (Transform Double) (Transform Double)
+		| Sphere (Transform Double) (Transform Double) (Transform Double)
 		| Bone [Command]
 		| Transformation Method (Transform Double)
 		| Save String
@@ -42,7 +42,7 @@ retrieve x = x $ makeTokenParser haskellStyle
 
 
 double :: Parser Double
-double = do
+double = 
 	try $ do
 		char '-'
 		num <- number
@@ -66,7 +66,7 @@ value par str =
 		return $ Variable varName
 
 doubleVal :: Parser (Val Double)
-doubleVal = value double (many1 $ satisfy (/= ' ')) 
+doubleVal = value double $ manyTill anyToken $ space <|> newline --many1 $ satisfy (/= ' ') 
 
 comThenDoubles :: Int -> String -> Parser [Val Double]
 comThenDoubles n s = do
@@ -117,8 +117,8 @@ parseCube = do
 	return $ Cube (sx,sy,sz) (rx,ry,rz) (mx,my,mz)
 
 parseSphere = do
-	(r:d:sx:sy:sz:rx:ry:rz:mx:my:mz:_) <- comThenDoubles 11 "sphere"
-	return $ Sphere r d (sx,sy,sz) (rx,ry,rz) (mx,my,mz)
+	(sx:sy:sz:rx:ry:rz:mx:my:mz:_) <- comThenDoubles 9 "sphere"
+	return $ Sphere (sx,sy,sz) (rx,ry,rz) (mx,my,mz)
 
 parseScale = do
 	(x:y:z:_) <- comThenDoubles 3 "scale"

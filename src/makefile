@@ -2,6 +2,9 @@ CENGINE = transform.o objects.o display.o matrix.o lines.o render.o
 SDLFLAGS = `sdl2-config --cflags --libs`
 STDFLAGS = -g -O3
 
+run: build
+	./LazyArmature examples/test.laf
+
 build: libengine.a Main.hs Import.o
 	ghc --make Main.hs -lSDL2 libengine.a -o LazyArmature -O3
 
