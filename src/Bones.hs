@@ -33,21 +33,39 @@ colorAndChildren :: Bone -> [Ptr Matrix]
 colorAndChildren (Lig _ _ c kids _) = c : concatMap colorAndChildren kids
 colorAndChildren (Nub _ _ c kids _) = c : concatMap colorAndChildren kids  
 
-transformBoneAndChildren :: Ptr Matrix -> Bone -> IO Bone
-transformBoneAndChildren t (Lig p m c k tj) = do
+transformMeshSkeleton :: Ptr Matrix -> Bone -> IO Bone
+transformMeshSkeleton t (Lig p m c k tj) = do
   nmat <- applyTransform t m
   if null k
     then return (Lig p nmat c k tj)
     else do
-      kids <- mapM (transformBoneAndChildren t) k
+      kids <- mapM (transformMeshSkeleton t) k
       return (Lig p nmat c kids tj)
-transformBoneAndChildren t (Nub p m c k tj) = do
+transformMeshSkeleton t (Nub p m c k tj) = do
   nmat <- applyTransform t m
   if null k
     then return (Nub p nmat c k tj)
     else do
-      kids <- mapM (transformBoneAndChildren t) k
+      kids <- mapM (transformMeshSkeleton t) k
       return (Nub p nmat c kids tj)
+
+-- takes a transform matrix & joint transform function
+-- applies to given bone and its descendents
+transformSkeleton :: Ptr Matrix -> (Joint -> Joint) -> Bone -> IO Bone
+transformSkeleton t jtform (Lig p m c k tj) = do
+  nmat <- applyTransform t m
+  if null k
+    then return (Lig p nmat c k (jtform tj))
+    else do
+      kids <- mapM (transformSkeleton t jtform) k
+      return (Lig p nmat c kids (jtform tj))
+transformSkeleton t jtform (Nub p m c k tj) = do
+  nmat <- applyTransform t m
+  if null k
+    then return (Nub p nmat c k (jtform tj))
+    else do
+      kids <- mapM (transformSkeleton t jtform) k
+      return (Nub p nmat c kids (jtform tj))
 
 renderBoneAndChildren :: Bone -> (CDouble, CDouble, CDouble) -> IO ()
 renderBoneAndChildren b (ex, ey, ez) = do
@@ -76,13 +94,15 @@ rotateJointAboutZ (Joint xi yi zi) zrad =
       in Joint x' y' zi
 
 rotateJointAboutOrigin :: Joint -> (CDouble, CDouble, CDouble) -> Joint
-rotateJointAboutOrigin j (rx, ry, rz) = (flip rotateJointAboutX $ rx) . (flip rotateJointAboutY $ ry) . (flip rotateJointAboutZ $ rz) j
+rotateJointAboutOrigin j (rx, ry, rz) = let j1 = rotateJointAboutZ j rz
+                                            j2 = rotateJointAboutY j ry
+                                        in rotateJointAboutX j rx
 
 translateJoint :: Joint -> (CDouble, CDouble, CDouble) -> Joint
 translateJoint (Joint jx jy jz) (mx, my, mz) = Joint (jx + mx) (jy + my) (jz + mz)
 
-rotateJointAboutJoint :: Joint -> Joint -> (CDouble, CDouble, CDouble) -> Joint
-rotateJointAboutJoint (Joint jx jy jz) (Joint ox oy oz) rot = let j1 = translateJoint (Joint jx jy jz) (jx-ox, jy-oy, jz-oz)
+rotateJointAboutJoint ::  (CDouble, CDouble, CDouble) -> Joint -> Joint -> Joint
+rotateJointAboutJoint rot (Joint jx jy jz) (Joint ox oy oz) = let j1 = translateJoint (Joint jx jy jz) (jx-ox, jy-oy, jz-oz)
                                                                   j2 = rotateJointAboutOrigin j1 rot
                                                               in translateJoint j2 (ox-jx, oy-jy, oz-jz)
                                     
@@ -90,7 +110,7 @@ rotateJointAboutJoint (Joint jx jy jz) (Joint ox oy oz) rot = let j1 = translate
 rotateAboutHead :: Bone -> (CDouble, CDouble, CDouble) -> IO Bone
 rotateAboutHead b (rx, ry, rz) = do
   tform <- xyzAboutPointMatrix rx ry rz hx hy hz
-  bon <- transformBoneAndChildren tform b
+  bon <- transformSkeleton tform (rotateJointAboutJoint (rx, ry, rz) h) b
   free tform
   return bon
   where h = case b of (Lig p _ _ _ _) -> tailJoint p
@@ -98,12 +118,12 @@ rotateAboutHead b (rx, ry, rz) = do
         hx = x h
         hy = y h
         hz = z h
-                        
+
 testSkeleton :: IO Bone
 testSkeleton = do
   ofrm <- newArray [1, 1, 1, 0, 0, 0, -2, 0, 0]
   c <- c_cube ofrm
-  s <- c_sphere 
+  s <- c_sphere ofrm
   c1 <- newArray [1, 1, 0]
   c2 <- newArray [1, 0, 1]
   c3 <- newArray [1, 1, 1]
