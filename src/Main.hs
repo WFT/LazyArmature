@@ -12,7 +12,7 @@ main = do
   skele <- testSkeleton
   renderBoneAndChildren skele (0, 0, 10)
   getLine
-  skele <- rotateAboutHead skele (0, 45, 0)
+  skele <- rotateAboutHead skele (0, 1, 0)
   renderBoneAndChildren skele (0, 0, 10)
   getLine
   closeDisplay
@@ -48,11 +48,11 @@ main = do
 spin :: Ptr Matrix -> Ptr CDouble -> Ptr Matrix -> Int -> IO ()
 spin faces eye colors delay = do
   tform <- spinMatrix 1 1 1
-  dup <- tform Import.* faces
+  dup <- tform ** faces
   let spinIt f = do
       render f eye colors
       quit <- checkQuit
-      m <- tform Import.* f
+      m <- tform ** f
       destructMatrix f
       threadDelay delay
       if (quit == 0) then spinIt m else return ()

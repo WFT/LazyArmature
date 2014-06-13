@@ -29,7 +29,7 @@ foreign import ccall "mat_construct" constructMatrix ::
   CInt -> CInt -> IO (Ptr Matrix)
 foreign import ccall "mat_destruct" destructMatrix ::
   Ptr Matrix -> IO ()
-foreign import ccall "mat_multiply" (*) ::
+foreign import ccall "mat_multiply" (**) ::
   Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
 foreign import ccall "mat_add_column" addColumn ::
   Ptr Matrix -> Ptr CDouble -> IO ()
