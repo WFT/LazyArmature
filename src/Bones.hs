@@ -57,8 +57,8 @@ renderBoneAndChildren b (ex, ey, ez) = do
       in renderList meshes eye colors
   free eye
 
-rotateBoneAndChildrenAboutHead :: Bone -> (CDouble, CDouble, CDouble) -> IO Bone
-rotateBoneAndChildrenAboutHead b (rx, ry, rz) = do
+rotateAboutHead :: Bone -> (CDouble, CDouble, CDouble) -> IO Bone
+rotateAboutHead b (rx, ry, rz) = do
   tform <- xyzAboutPointMatrix rx ry rz hx hy hz
   transformBoneAndChildren tform b
   where h = case b of (Lig p _ _ _ _) -> tailJoint p
@@ -78,3 +78,5 @@ renderList faces eye colors = do
   renderSeries facep eye colorp
   free facep
   free colorp
+
+
