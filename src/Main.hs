@@ -17,27 +17,20 @@ main = do
   c2 <- newArray [1, 0, 1]
   c3 <- newArray [1, 1, 1]
   colorm <- colorsForObject m c1 c2 c3
-  rxyz <- xyzAboutPointMatrix 30 0 0 (-10) (-10) 0
-  obj <- applyTransformFree rxyz m
   colorn <- colorsForObject n c1 c2 c3
   putStrLn "renderList... enter to continue"
   getLine
   renderList [m, n] eye [colorm, colorn]
   putStrLn "render... enter to continue"
   getLine
+  rxyz <- xyzAboutPointMatrix 30 0 0 (-10) (-10) 0
+  obj <- applyTransformFree rxyz m
   render obj eye colorm
   putStrLn "spin... quit LazyArmature to continue"
   spin obj eye colorm 1300
   destructMatrix obj
   getLine
   closeDisplay
-
--- sometimes segfaults when the C is accessing the first matrix nd I have literally zero idea why
-renderList :: [Ptr Matrix] -> Ptr CDouble -> [Ptr Matrix] -> IO ()
-renderList faces eye colors = do
-  facep <- newArray0 nullPtr faces
-  colorp <- newArray0 nullPtr colors
-  renderSeries facep eye colorp
 
 spin :: Ptr Matrix -> Ptr CDouble -> Ptr Matrix -> Int -> IO ()
 spin faces eye colors delay = do

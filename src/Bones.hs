@@ -3,6 +3,8 @@ module Bones where
 import Import
 import Foreign.Ptr
 import Foreign.C
+import Foreign.Marshal.Array
+import Foreign.Marshal.Alloc
 
 data Joint = Joint { x :: CDouble
                    , y :: CDouble
@@ -22,6 +24,7 @@ data Bone = Lig { parent :: Bone
                   , tailJoint :: Joint
                   }
 
+-- untested ...
 meshAndChildren :: Bone -> [Ptr Matrix]
 meshAndChildren (Lig _ m _ kids _) = m : concatMap meshAndChildren kids
 meshAndChildren (Nub _ m _ kids _) = m : concatMap meshAndChildren kids
@@ -30,7 +33,6 @@ colorAndChildren :: Bone -> [Ptr Matrix]
 colorAndChildren (Lig _ _ c kids _) = c : concatMap colorAndChildren kids
 colorAndChildren (Nub _ _ c kids _) = c : concatMap colorAndChildren kids  
 
--- untested
 transformBoneAndChildren :: Ptr Matrix -> Bone -> IO Bone
 transformBoneAndChildren t (Lig p m c k tj) = do
   nmat <- applyTransform t m
@@ -47,3 +49,19 @@ transformBoneAndChildren t (Nub p m c k tj) = do
       kids <- mapM (transformBoneAndChildren t) k
       return (Nub p nmat c kids tj)
 
+renderBoneAndChildren :: Bone -> (CDouble, CDouble, CDouble) -> IO ()
+renderBoneAndChildren b (ex, ey, ez) = do
+  eye <- newArray [ex, ey, ez]
+  let meshes = meshAndChildren b
+      colors = colorAndChildren b
+      in renderList meshes eye colors
+  free eye
+
+-- ...untested
+
+-- tested:
+renderList :: [Ptr Matrix] -> Ptr CDouble -> [Ptr Matrix] -> IO ()
+renderList faces eye colors = do
+  facep <- newArray0 nullPtr faces
+  colorp <- newArray0 nullPtr colors
+  renderSeries facep eye colorp
