@@ -23,8 +23,11 @@ main = do
 	initDisplay 500 500
 	ambientLight 200 200 200
 	
-	initStates <- sequence $ map genState [1..100]
-	test <- mapM (evalStateT (mapM_ runCommand comms)) initStates
+	initStates <- mapM genState [1..100]
+	s <- execStateT (mapM_ runCommand comms) $ head initStates 
+	putStrLn $ show $ _bone s
+	
+	test <- mapM_ (evalStateT (mapM_ runCommand comms)) initStates
 --	state <- genState 0
 --	evalStateT (mapM_ runCommand comms) $ state
 	exit <- getLine
