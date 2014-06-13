@@ -14,6 +14,7 @@ main = do
   getLine
   skele <- rotateAboutHead skele (0, 1, 0)
   renderBoneAndChildren skele (0, 0, 10)
+  print skele
   getLine
   closeDisplay
 

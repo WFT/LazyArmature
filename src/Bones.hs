@@ -9,7 +9,7 @@ import Foreign.Marshal.Alloc
 data Joint = Joint { x :: CDouble
                    , y :: CDouble
                    , z :: CDouble
-                   }
+                   } deriving (Show, Read)
 
 data Bone = Lig { parent :: Bone
                 , mesh :: Ptr Matrix
@@ -22,7 +22,7 @@ data Bone = Lig { parent :: Bone
                   , color :: Ptr Matrix
                   , children :: [Bone]
                   , tailJoint :: Joint
-                  }
+                  } deriving (Show)
 
 -- untested ...
 meshAndChildren :: Bone -> [Ptr Matrix]
@@ -131,7 +131,6 @@ testSkeleton = do
   colors2 <- colorsForObject s c1 c2 c3
   let j = Joint (-3) 0 0
       j2 = Joint 3 0 0
-      
       --sub = Lig 
       root = (Nub j c colors1 [] j2)
     in return root
