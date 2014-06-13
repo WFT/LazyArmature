@@ -69,7 +69,9 @@ rotateAboutHead b (rx, ry, rz) = do
         hy = y h
         hz = z h
                         
-
+testSkeleton :: IO Bone
+testSkeleton = do
+  
 -- ...untested
 
 -- tested:
