@@ -25,8 +25,6 @@ main = do
 	
 	initStates <- mapM genState [1..100]
 	s <- execStateT (mapM_ runCommand comms) $ head initStates 
-	putStrLn $ show $ _bone s
-	
 	test <- mapM_ (evalStateT (mapM_ runCommand comms)) initStates
 --	state <- genState 0
 --	evalStateT (mapM_ runCommand comms) $ state

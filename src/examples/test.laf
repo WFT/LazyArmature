@@ -1,7 +1,8 @@
-vary hunter 1 -10 1 30
-vary hunter -10 1 31 60
+vary hunter 1 -9 1 30
+vary hunter -9 1 31 60
 vary will 1 -90 1 30
 vary will -90 1 31 60
+vary bob 0 10 1 60
 sphere 3 3 3 0 0 0 0 0 hunter 
 cube 1 1 1 9 9 will hunter 0 0
 skeleton 0 10 10 { 
