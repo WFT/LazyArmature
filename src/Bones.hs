@@ -100,8 +100,7 @@ translateJoint (Joint jx jy jz) (mx, my, mz) = Joint (jx + mx) (jy + my) (jz + m
 rotateJointAboutJoint ::  (CDouble, CDouble, CDouble) -> Joint -> Joint -> Joint
 rotateJointAboutJoint rot (Joint jx jy jz) (Joint ox oy oz) = let j1 = translateJoint (Joint jx jy jz) (jx-ox, jy-oy, jz-oz)
                                                                   j2 = rotateJointAboutOrigin j1 rot
-                                                              in translateJoint j2 (ox-jx, oy-jy, oz-jz)
-                                    
+                                                              in translateJoint j2 (ox-jx, oy-jy, oz-jz)                                   
 
 rotateAboutHead :: Bone -> (CDouble, CDouble, CDouble) -> IO Bone
 rotateAboutHead b (rx, ry, rz) = do
@@ -109,11 +108,15 @@ rotateAboutHead b (rx, ry, rz) = do
   bon <- transformSkeleton tform (rotateJointAboutJoint (rx, ry, rz) h) b
   free tform
   return bon
-  where h = case b of (Lig p _ _ _ _) -> tailJoint p
+  where h = case b of (Lig p _ _ _ _) -> getJoint p
                       (Nub hj _) -> hj
         hx = x h
         hy = y h
         hz = z h
+
+getJoint :: Bone -> Joint
+getJoint (Nub l _) = l
+getJoint (Lig _ _ _ _ tj) = tj
 
 testSkeleton :: IO Bone
 testSkeleton = do
@@ -127,7 +130,7 @@ testSkeleton = do
   colors2 <- colorsForObject s c1 c2 c3
   let j = Joint (-3) 0 0
       j2 = Joint 3 0 0
-      nub = Nub j []
+      nub = Nub (Joint 0 0 0) []
       root = (Lig nub c colors1 [] j2)
     in return root
 

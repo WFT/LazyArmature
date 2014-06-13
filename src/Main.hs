@@ -12,7 +12,7 @@ main = do
   skele <- testSkeleton
   renderBoneAndChildren skele (0, 0, 10)
   getLine
-  skele <- rotateAboutHead skele (0, 1, 0)
+  skele <- rotateAboutHead skele (0, 0.3, 0)
   renderBoneAndChildren skele (0, 0, 10)
   print skele
   getLine
