@@ -9,6 +9,7 @@ module Wrapper (
 	spin,
 	extendMatrix,
 	genState,
+	toJoint,
 --	writePPM,
 --	writeFrame
 	) where
@@ -44,6 +45,8 @@ data RenderState = RenderState {_fnum :: Int,
 				_bone :: Bone
 				}
 				deriving Show
+toJoint :: Tform -> Joint
+toJoint (x,y,z) = Joint (realToFrac x) (realToFrac y) (realToFrac z)
 
 genState :: Int -> IO RenderState
 genState fnum = do 
@@ -84,10 +87,10 @@ extendMatrix mdest msrc = do
 
 
 renderState :: RenderState -> Tform -> IO ()
-renderState (RenderState {_currentTri = mesh, _colors = cs}) 
+renderState (RenderState {_currentTri = mesh, _colors = cs,_bone = bone}) 
 		(ex,ey,ez) = do
 	e <- newArray $ map realToFrac [ex,ey,ez] -- Fix later
-	renderList [mesh] e [cs]
+	renderList (mesh : meshAndChildren bone) e (cs : colorAndChildren bone)
 
 renderList :: [Ptr Matrix] -> Ptr CDouble -> [Ptr Matrix] -> IO ()
 renderList faces eye colors = do
