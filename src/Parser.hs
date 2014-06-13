@@ -91,7 +91,7 @@ parseBone = do
 	many space
 	eJoint <- manyTill anyToken space
 	boneComms <- manyTill parseCommand (string "bone-end") 
-	return $ Bone pJoint boneComms eJoint
+	return $ Bone pJoint eJoint boneComms 
 
 
 parseContents :: Parser [Command]

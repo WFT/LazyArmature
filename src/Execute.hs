@@ -7,7 +7,6 @@ module Execute (
 import Parser
 import Operations
 import Matrix
-import Matrix3D
 import Sequence
 
 import Data.Map (Map)
@@ -19,15 +18,6 @@ import Control.Monad.Trans.State
 import Control.Monad.IO.Class
 
 
-data RenderState m a d = RenderState {_fnum :: Int, 
-				_varys :: Map String [Sequence Double],
-				_currentTransform :: Ptr,
-				_transformations :: Map String Ptr,
-				_currentTri :: Ptr,
-				_bones :: [Bone Ptr],
-				_out :: Resolution Int,
-				}
-				deriving Show
 
 genState :: (V.Storable d) => Renderable ListMatrix Double d -> Vector d -> Resolution Int -> Int -> RenderState ListMatrix Double d
 genState renderable@(Renderable {_col=col}) v out  n= 

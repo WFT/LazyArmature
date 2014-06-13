@@ -1,4 +1,5 @@
 module Operations (
+	RenderState (..),
 	cube,
 	sphere,
 	renderParallel,
@@ -7,58 +8,57 @@ module Operations (
 --	writePPM,
 --	writeFrame
 	) where
-import Matrix
-import Matrix3D
-import Objects hiding (sphere)
 
 import Text.Printf
 
+import Foreign
+import Foreign.Marshal.Array
 
-import Data.Vector.Storable (Vector)
-import qualified Data.Vector.Storable as V
+--import Bones
+
+import Data.Map
 
 import System.IO
 
 import Data.List (sort)
 
+
+import Sequence
+--import Import
+
 type Tform = (Double,Double,Double)
 type Eye = Tform
 
+data RenderState = RenderState {_fnum :: Int, 
+				_varys :: Map String [Sequence Double],
+				_currentTransform :: Ptr (),
+				_transformations :: Map String Ptr,
+				_colors :: Ptr (),
+				_currentTri :: Ptr (),
+				_bones :: Bone
+				}
+				deriving Show
 
-cull eye = filter (isBackface eye . rows)
-projCull eye@(ex,ey,ez) = project eye . cull [ex,ey,ez]
 
-projectGeometry :: (Matrix m) => Tform -> Renderable m Double d -> Renderable m Double d
-projectGeometry eye buffer@
-	(Renderable {_lineMatrix = mls,
-	_triangleMatrix = mtri}) 
-	= buffer {
---		_col = green, 
-		_lineMatrix = project eye mls,
-		_triangleMatrix = projCull eye mtri
-	}
-
-cube :: (Matrix m) => Tform -> Tform -> Tform -> [m Double]
+cube :: Tform -> Tform -> Tform -> IO (Ptr ())
 cube s r m = (flip map) unitCube $ transform (collate [scale s, rotate r, move m])
 
-sphere :: (Matrix m) => Double -> Double -> Tform -> Tform -> Tform -> [m Double]
+sphere :: Double -> Double -> Tform -> Tform -> Tform -> IO (Ptr ())
 sphere rad divs s r m = (flip map) (sphereTri rad (floor divs)) 
 	$ transform (collate [scale s, rotate r, move m])
 
-renderParallel :: (Matrix m,V.Storable d) => Resolution Int -> Renderable m Double d -> [(Vector Int,Vector d)]
-renderParallel out buffer@(Renderable scr col mls mtri) =
-	renderVector out $ buffer {
-		_triangleMatrix = filter (parallelBackface . rows) mtri
-	}
+addMesh :: Ptr () -> Ptr () -> IO (Ptr ())
+addMesh dest src = 
 
-renderCyclops :: (Matrix m,V.Storable d) => Resolution Int -> Eye -> Renderable m Double d -> [(Vector Int,Vector d)]
-renderCyclops out eye buffer = 
-	renderVector out $ projectGeometry eye buffer
+renderState :: RenderState -> IO ()
+renderState (RenderState {_currentTri = mesh, _colors = cs,
+		_bone =  root}) = do
+	m <- newArray $ mesh ++ meshAndChildren root
+	c <- newArray $ cs ++ colorAndChildren root
 
-renderStereo :: (Matrix m,V.Storable d) => Resolution Int -> (Eye,Eye) -> Renderable m Double d -> [(Vector Int,V.Vector d)]
-renderStereo out (e1,e2) buffer = 
-	(renderVector out $ projectGeometry e1 $ buffer)
-		++ (renderVector out $ projectGeometry e2 $ buffer)
+
+
+
 {-
 writePPM :: String -> Resolution Int -> Vector (Color Int) -> IO ()
 writePPM s out buffer = do
