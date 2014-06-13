@@ -29,3 +29,21 @@ meshAndChildren (Nub _ m _ kids _) = m : concatMap meshAndChildren kids
 colorAndChildren :: Bone -> [Ptr Matrix]
 colorAndChildren (Lig _ _ c kids _) = c : concatMap colorAndChildren kids
 colorAndChildren (Nub _ _ c kids _) = c : concatMap colorAndChildren kids  
+
+-- untested
+transformBoneAndChildren :: Ptr Matrix -> Bone -> IO Bone
+transformBoneAndChildren t (Lig p m c k tj) = do
+  nmat <- applyTransform t m
+  if null k
+    then return (Lig p nmat c k tj)
+    else do
+      kids <- mapM (transformBoneAndChildren t) k
+      return (Lig p nmat c kids tj)
+transformBoneAndChildren t (Nub p m c k tj) = do
+  nmat <- applyTransform t m
+  if null k
+    then return (Nub p nmat c k tj)
+    else do
+      kids <- mapM (transformBoneAndChildren t) k
+      return (Nub p nmat c kids tj)
+
