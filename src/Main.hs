@@ -49,11 +49,11 @@ main = do
 spin :: Ptr Matrix -> Ptr CDouble -> Ptr Matrix -> Int -> IO ()
 spin faces eye colors delay = do
   tform <- spinMatrix 1 1 1
-  dup <- tform matrixMultiply faces
+  dup <- tform `matrixMultiply` faces
   let spinIt f = do
       render f eye colors
       quit <- checkQuit
-      m <- tform matrixMultiply f
+      m <- tform `matrixMultiply` f
       destructMatrix f
       threadDelay delay
       if (quit == 0) then spinIt m else return ()
