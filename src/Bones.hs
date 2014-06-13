@@ -57,6 +57,36 @@ renderBoneAndChildren b (ex, ey, ez) = do
       in renderList meshes eye colors
   free eye
 
+rotateJointAboutX :: Joint -> CDouble -> Joint
+rotateJointAboutX (Joint xi yi zi) xrad =
+  let y' = (yi * (cos xrad)) - (zi * (sin xrad))
+      z' = (yi * (sin xrad)) + (zi * (cos xrad))
+      in Joint xi y' z'
+
+rotateJointAboutY :: Joint -> CDouble -> Joint
+rotateJointAboutY (Joint xi yi zi) yrad =
+  let x' = (zi * (cos yrad)) - (xi * (sin yrad))
+      z' = (zi * (sin yrad)) + (xi * (cos yrad))
+      in Joint x' yi z'
+
+rotateJointAboutZ :: Joint -> CDouble -> Joint
+rotateJointAboutZ (Joint xi yi zi) zrad =
+  let x' = (xi * (cos zrad)) - (yi * (sin zrad))
+      y' = (xi * (sin zrad)) + (yi * (cos zrad))
+      in Joint x' y' zi
+
+rotateJointAboutOrigin :: Joint -> (CDouble, CDouble, CDouble) -> Joint
+rotateJointAboutOrigin j (rx, ry, rz) = (flip rotateJointAboutX $ rx) . (flip rotateJointAboutY $ ry) . (flip rotateJointAboutZ $ rz) j
+
+translateJoint :: Joint -> (CDouble, CDouble, CDouble) -> Joint
+translateJoint (Joint jx jy jz) (mx, my, mz) = Joint (jx + mx) (jy + my) (jz + mz)
+
+rotateJointAboutJoint :: Joint -> Joint -> (CDouble, CDouble, CDouble) -> Joint
+rotateJointAboutJoint (Joint jx jy jz) (Joint ox oy oz) rot = let j1 = translateJoint (Joint jx jy jz) (jx-ox, jy-oy, jz-oz)
+                                                                  j2 = rotateJointAboutOrigin j1 rot
+                                                              in translateJoint j2 (ox-jx, oy-jy, oz-jz)
+                                    
+
 rotateAboutHead :: Bone -> (CDouble, CDouble, CDouble) -> IO Bone
 rotateAboutHead b (rx, ry, rz) = do
   tform <- xyzAboutPointMatrix rx ry rz hx hy hz
@@ -71,15 +101,20 @@ rotateAboutHead b (rx, ry, rz) = do
                         
 testSkeleton :: IO Bone
 testSkeleton = do
-  ofrm <- newArray [3, 3, 3, 0, 0, 0, 0, 0, 0]
+  ofrm <- newArray [1, 1, 1, 0, 0, 0, -2, 0, 0]
   c <- c_cube ofrm
+  s <- c_sphere 
   c1 <- newArray [1, 1, 0]
   c2 <- newArray [1, 0, 1]
   c3 <- newArray [1, 1, 1]
-  colors <- colorsForObject c c1 c2 c3
+  colors1 <- colorsForObject c c1 c2 c3
+  colors2 <- colorsForObject s c1 c2 c3
   let j = Joint (-3) 0 0
       j2 = Joint 3 0 0
-    in return (Nub j c colors [] j2)
+      
+      --sub = Lig 
+      root = (Nub j c colors1 [] j2)
+    in return root
 
   -- ...untested
 

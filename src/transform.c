@@ -55,9 +55,9 @@ Matrix *rotate_xyz_point_mat(double xrad, double yrad, double zrad,
 			     double xpos, double ypos, double zpos) {
   Matrix *m1 = move_mat(-xpos, -ypos, -zpos);
   Matrix *m2 = move_mat(xpos, ypos, zpos);
-  Matrix *t = apply_transform_free(rotate_x_mat(TO_RAD(xrad)), m1);
-  t = apply_transform_free(rotate_y_mat(TO_RAD(yrad)), t);
-  t = apply_transform_free(rotate_z_mat(TO_RAD(zrad)), t);
+  Matrix *t = apply_transform_free(rotate_x_mat(xrad), m1);
+  t = apply_transform_free(rotate_y_mat(yrad), t);
+  t = apply_transform_free(rotate_z_mat(zrad), t);
   t = apply_transform_free(m2, t);
   return t;
 }
