@@ -91,8 +91,8 @@ rotateJointAboutZ (Joint xi yi zi) zrad =
 
 rotateJointAboutOrigin :: Joint -> (CDouble, CDouble, CDouble) -> Joint
 rotateJointAboutOrigin j (rx, ry, rz) = let j1 = rotateJointAboutZ j rz
-                                            j2 = rotateJointAboutY j ry
-                                        in rotateJointAboutX j rx
+                                            j2 = rotateJointAboutY j1 ry
+                                        in rotateJointAboutX j2 rx
 
 translateJoint :: Joint -> (CDouble, CDouble, CDouble) -> Joint
 translateJoint (Joint jx jy jz) (mx, my, mz) = Joint (jx + mx) (jy + my) (jz + mz)
@@ -129,8 +129,8 @@ testSkeleton = do
   colors1 <- colorsForObject c c1 c2 c3
   colors2 <- colorsForObject s c1 c2 c3
   let j = Joint (-3) 0 0
-      j2 = Joint 3 0 0
-      nub = Nub (Joint 0 0 0) []
+      j2 = Joint (-1) 0 0
+      nub = Nub (Joint 3 2 0) []
       root = (Lig nub c colors1 [] j2)
     in return root
 
