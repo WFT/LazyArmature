@@ -11,8 +11,8 @@ main = do
   ambientLight 200 200 200
   oform <- newArray [3, 3, 3, 0, 0, 0, 0, 0, 0]
   oforn <- newArray [3, 3, 3, 0, 0, 0, -1, -1, 0]
-  m <- sphere oform
-  n <- cube oforn
+  m <- c_sphere oform
+  n <- c_cube oforn
   eye <- newArray [0, 0, 10]
   c1 <- newArray [1, 1, 0]
   c2 <- newArray [1, 0, 1]
@@ -20,17 +20,16 @@ main = do
   colorm <- colorsForObject m c1 c2 c3
   colorn <- colorsForObject n c1 c2 c3
   putStrLn "renderList... enter to continue"
-  getLine
   renderList [m, n] eye [colorm, colorn]
-  putStrLn "render... enter to continue"
   getLine
+  putStrLn "render... enter to continue"
   rxyz <- xyzAboutPointMatrix 30 0 0 (-10) (-10) 0
   obj <- applyTransformFree rxyz m
   render obj eye colorm
+  getLine
   putStrLn "spin... quit LazyArmature to continue"
   spin obj eye colorm 1300
   destructMatrix obj
-  getLine
   closeDisplay
 
 spin :: Ptr Matrix -> Ptr CDouble -> Ptr Matrix -> Int -> IO ()

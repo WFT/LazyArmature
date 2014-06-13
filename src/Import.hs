@@ -2,6 +2,7 @@ module Import where
 
 import Foreign.C
 import Foreign.Ptr
+import Foreign.Marshal.Array
 
 type Matrix = ()
 
@@ -36,6 +37,8 @@ foreign import ccall "mat_get_cell" getCell ::
   Ptr Matrix -> CInt -> CInt -> CDouble -> IO ()
 foreign import ccall "mat_set_cell" setCell ::
   Ptr Matrix -> CInt -> CInt -> CDouble -> IO ()
+foreign import ccall "mat_extend" c_extendMatrix ::
+  Ptr Matrix -> Ptr Matrix -> IO ()
 foreign import ccall "pmat" pmat ::
   Ptr Matrix -> IO ()
 
@@ -44,10 +47,11 @@ foreign import ccall "apply_transform_free" applyTransformFree ::
   Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
 foreign import ccall "apply_transform" applyTransform ::
   Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
-foreign import ccall "apply_transform_many" applyManyTransform ::
-  Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
-foreign import ccall "apply_transform_many_free" applyManyTransformFree ::
-  Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
+-- we don't know if this works yet
+-- foreign import ccall "apply_transform_many" applyManyTransform ::
+--   Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
+-- foreign import ccall "apply_transform_many_free" applyManyTransformFree ::
+--   Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
 foreign import ccall "identity_mat" identityMatrix :: IO (Ptr Matrix)
 foreign import ccall "move_mat" moveMatrix ::
   CDouble -> CDouble -> CDouble -> IO (Ptr Matrix)
@@ -63,9 +67,10 @@ foreign import ccall "rotate_xyz_point_mat" xyzAboutPointMatrix ::
   CDouble -> CDouble -> CDouble -> CDouble -> CDouble -> CDouble -> IO (Ptr Matrix)
 
 -- objects.c/h
-foreign import ccall "box_t" cube ::
+
+foreign import ccall "box_t" c_cube ::
   Ptr CDouble -> IO (Ptr Matrix)
-foreign import ccall "sphere_t" sphere ::
+foreign import ccall "sphere_t" c_sphere ::
   Ptr CDouble -> IO (Ptr Matrix)
 foreign import ccall "color_for_object" colorsForObject ::
   Ptr Matrix -> Ptr CDouble -> Ptr CDouble -> Ptr CDouble -> IO (Ptr Matrix)
