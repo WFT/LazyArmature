@@ -22,7 +22,8 @@ data Maybe a = Nothing | Just a
 
 data Command = 	Cube (Transform Double) (Transform Double) (Transform Double) 
 		| Sphere (Transform Double) (Transform Double) (Transform Double)
-		| Bone [Command]
+		| Skeleton (Transform Double) [Command]
+		| Bone (Transform Double) [Command]
 		| Transformation Method (Transform Double)
 		| Save String
 		| Restore String
@@ -33,6 +34,7 @@ data Command = 	Cube (Transform Double) (Transform Double) (Transform Double)
 		| Display
 		| File String
 		| Files String
+		| Print String
 		| Unknown
 	deriving Show
 
@@ -68,44 +70,61 @@ value par str =
 doubleVal :: Parser (Val Double)
 doubleVal = value double $ manyTill anyToken $ space <|> newline --many1 $ satisfy (/= ' ') 
 
+whitespace :: Parser Char
+whitespace = try space <|> try tab <|> newline
+
 comThenDoubles :: Int -> String -> Parser [Val Double]
 comThenDoubles n s = do
 	string s
 	many space
 	count n $ many space >> doubleVal
 
-
+parseSkeleton :: Parser Command
+parseSkeleton = do
+	(x:y:z:_) <- comThenDoubles 3 "skeleton"
+	many whitespace
+	char '{'
+	many whitespace
+	skeleton <- manyTill parseCommand (try $ char '}')
+	return $ Skeleton (x,y,z) skeleton
 
 parseBone :: Parser Command
 parseBone = do
-	string "bone-start"
-	many space
-	boneComms <- manyTill parseCommand (string "bone-end") 
-	return $ Bone boneComms 
+	(x:y:z:_) <- comThenDoubles 3 "bone"
+	many whitespace
+	char '{'
+	many whitespace
+	boneComms <- manyTill parseCommand (try $ char '}') 
+	return $ Bone (x,y,z) boneComms 
 
 
 parseContents :: Parser [Command]
 parseContents = parseCommand `sepEndBy` many newline
 
 parseCommand :: Parser Command
-parseCommand = choice $ map try [
-	parseCube,
-	parseSphere,
-	parseBone,
-	parseScale,
-	parseRotate,
-	parseMove,
-	parseSave,
-	parseRestore,
-	parseVar,
-	parseRenderParallel,
-	parseRenderCyclops,
-	parseRenderStereo,
-	parseDisplay,
-	parseFile,
-	parseFiles,
-	(manyTill anyToken newline) >> return Unknown
-	]
+parseCommand = do
+	comm <- choice $ map try [
+		parseCube,
+		parseSphere,
+		parseSkeleton,
+		parseBone,
+		parseScale,
+		parseRotate,
+		parseMove,
+		parseSave,
+		parseRestore,
+		parseVar,
+		parseRenderParallel,
+		parseRenderCyclops,
+		parseRenderStereo,
+		parseDisplay,
+		parseFile,
+		parseFiles,
+		parsePrint,
+		(manyTill anyToken newline) >> return Unknown
+		]
+	many whitespace
+	return comm
 
 parseCube,parseSphere,
 	parseScale,parseRotate,parseMove,
@@ -180,3 +199,9 @@ parseFiles = do
 	many1 space
 	fName <- manyTill anyToken space 
 	return $ Files fName
+
+parsePrint = do
+	string "print"
+	many whitespace
+	out <- manyTill anyToken whitespace
+	return $ Print out
