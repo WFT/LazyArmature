@@ -22,12 +22,10 @@ data Bone = Lig { parent :: Bone
                   , tailJoint :: Joint
                   }
 
-childMeshes :: Bone -> [Ptr Matrix]
-childMeshes (Lig _ m _ kids _) = m : concatMap childMeshes kids
-childMeshes (Nub _ m _ kids _) = m : concatMap childMeshes kids
+meshAndChildren :: Bone -> [Ptr Matrix]
+meshAndChildren (Lig _ m _ kids _) = m : concatMap meshAndChildren kids
+meshAndChildren (Nub _ m _ kids _) = m : concatMap meshAndChildren kids
 
-childColors :: Bone -> [Ptr Matrix]
-childColors (Lig _ _ c kids _) = c : concatMap childMeshes kids
-childColors (Nub _ _ c kids _) = c : concatMap childMeshes kids
-
-                     
+colorAndChildren :: Bone -> [Ptr Matrix]
+colorAndChildren (Lig _ _ c kids _) = c : concatMap colorAndChildren kids
+colorAndChildren (Nub _ _ c kids _) = c : concatMap colorAndChildren kids  
