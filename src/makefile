@@ -5,6 +5,9 @@ STDFLAGS = -g -O3
 run: build
 	./LazyArmature examples/test.laf
 
+ghci: build
+	ghci libengine.a Execute.hs
+
 build: libengine.a Main.hs Import.o
 	ghc --make Main.hs -lSDL2 libengine.a -o LazyArmature -O3
 
