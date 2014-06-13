@@ -10,20 +10,20 @@ main = do
   ambientLight 200 200 200
   oform <- newArray [3, 3, 3, 0, 0, 0, 0, 0, 0]
   --oforn <- newArray [3, 3, 3, 0, 0, 0, -1, -1, 0]
-  m <- sphere oform
+  m <- c_sphere oform
   --n <- cube oforn
   eye <- newArray [0, 0, 10]
   c1 <- newArray [1, 1, 0]
   c2 <- newArray [1, 0, 1]
   c3 <- newArray [1, 1, 1]
   colorm <- colorsForObject m c1 c2 c3
-  rxyz <- xyzAboutPointMatrix 30 0 0 (-10) (-10) 0
-  obj <- applyTransformFree rxyz m
+  --rxyz <- xyzAboutPointMatrix 30 0 0 (-10) (-10) 0
+  --obj <- applyTransformFree rxyz m
   --colorn <- colorsForObject n c1 c2 c3
   --renderList [m, n] eye [colorm, colorn]
-  render obj eye colorm
-  -- spin m eye colorm 1300
-  destructMatrix obj
+  --render obj eye colorm
+  spin m eye colorm 1300
+  destructMatrix m
   getLine
   closeDisplay
 

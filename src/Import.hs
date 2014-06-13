@@ -47,10 +47,11 @@ foreign import ccall "apply_transform_free" applyTransformFree ::
   Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
 foreign import ccall "apply_transform" applyTransform ::
   Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
-foreign import ccall "apply_transform_many" applyManyTransform ::
-  Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
-foreign import ccall "apply_transform_many_free" applyManyTransformFree ::
-  Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
+-- we don't know if this works yet
+-- foreign import ccall "apply_transform_many" applyManyTransform ::
+--   Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
+-- foreign import ccall "apply_transform_many_free" applyManyTransformFree ::
+--   Ptr Matrix -> Ptr (Ptr Matrix) -> IO ()
 foreign import ccall "identity_mat" identityMatrix :: IO (Ptr Matrix)
 foreign import ccall "move_mat" moveMatrix ::
   CDouble -> CDouble -> CDouble -> IO (Ptr Matrix)
