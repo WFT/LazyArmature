@@ -61,6 +61,10 @@ runCommand :: (Matrix m,V.Storable d) => Command -> StateT (RenderState m Double
 
 runCommand (Cube ts tr tm) = do
 	RenderState {_fnum = fnum, _varys = vs} <- get
+	let 
+		( = getTransform (seqsVal fnum) vs
+	tri <- cube
+RenderState {_fnum = fnum, _varys = vs} <- get
 	let 	
 		gt = getTransform (seqsVal fnum) vs
 		(s,r,m) = (gt ts,gt tr,gt tm)

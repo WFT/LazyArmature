@@ -3,7 +3,7 @@ SDLFLAGS = `sdl2-config --cflags --libs`
 STDFLAGS = -g -O3
 
 build: libengine.a Main.hs Import.o
-	ghc --make Main.hs -lSDL2 libengine.a -o LazyArmature -O
+	ghc --make Main.hs -lSDL2 libengine.a -o LazyArmature -O3
 
 Import.o: Import.hs
 	ghc -c Import.hs

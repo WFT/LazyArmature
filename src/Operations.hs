@@ -1,22 +1,22 @@
-module Operations (
+module Wrapper (
 	RenderState (..),
 	cube,
 	sphere,
-	renderParallel,
-	renderCyclops,
-	renderStereo,
+	renderState,
 --	writePPM,
 --	writeFrame
 	) where
+
+--import Import
 
 import Text.Printf
 
 import Foreign
 import Foreign.Marshal.Array
 
---import Bones
+import Bones
 
-import Data.Map
+import Data.Map (Map)
 
 import System.IO
 
@@ -24,38 +24,46 @@ import Data.List (sort)
 
 
 import Sequence
---import Import
+import Import
 
 type Tform = (Double,Double,Double)
 type Eye = Tform
 
 data RenderState = RenderState {_fnum :: Int, 
 				_varys :: Map String [Sequence Double],
-				_currentTransform :: Ptr (),
-				_transformations :: Map String Ptr,
-				_colors :: Ptr (),
-				_currentTri :: Ptr (),
-				_bones :: Bone
+				_currentTransform :: Ptr Matrix,
+				_transformations :: Map String (Ptr Matrix),
+				_colors :: Ptr Matrix,
+				_currentTri :: Ptr Matrix,
+				_bone :: Bone
 				}
 				deriving Show
 
 
-cube :: Tform -> Tform -> Tform -> IO (Ptr ())
-cube s r m = (flip map) unitCube $ transform (collate [scale s, rotate r, move m])
+cube :: Tform -> Tform -> Tform -> IO (Ptr Matrix)
+cube (sx,sy,sz) (rx,ry,rz) (x,y,z) = c_cube =<< 
+	(newArray $ map realToFrac [sx,sy,sz,rx,ry,rz,x,y,z])
+	
 
-sphere :: Double -> Double -> Tform -> Tform -> Tform -> IO (Ptr ())
-sphere rad divs s r m = (flip map) (sphereTri rad (floor divs)) 
-	$ transform (collate [scale s, rotate r, move m])
+sphere :: Tform -> Tform -> Tform -> IO (Ptr Matrix)
+sphere (sx,sy,sz) (rx,ry,rz) (x,y,z) = c_sphere =<<
+	(newArray $ map realToFrac [sx,sy,sz,rx,ry,rz,x,y,z])
 
-addMesh :: Ptr () -> Ptr () -> IO (Ptr ())
-addMesh dest src = 
+extendMatrix :: Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
+extendMatrix mdest msrc = do 
+	c_extendMatrix mdest msrc
+	destructMatrix msrc
+	return mdest
 
-renderState :: RenderState -> IO ()
+
+renderState :: RenderState -> Tform -> IO ()
 renderState (RenderState {_currentTri = mesh, _colors = cs,
-		_bone =  root}) = do
-	m <- newArray $ mesh ++ meshAndChildren root
-	c <- newArray $ cs ++ colorAndChildren root
-
+		_bone =  root}) 
+		(ex,ey,ez) = do
+	m <- newArray $ mesh : meshAndChildren root
+	c <- newArray $ cs : colorAndChildren root
+	e <- newArray $ map realToFrac [ex,ey,ez] -- Fix later
+	renderSeries m e c
 
 
 

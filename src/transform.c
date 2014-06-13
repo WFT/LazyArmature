@@ -55,22 +55,11 @@ Matrix *rotate_xyz_point_mat(double xrad, double yrad, double zrad,
 			     double xpos, double ypos, double zpos) {
   Matrix *m1 = move_mat(-xpos, -ypos, -zpos);
   Matrix *m2 = move_mat(xpos, ypos, zpos);
-  Matrix *x = rotate_x_mat(xrad);
-  Matrix *y = rotate_y_mat(yrad);
-  Matrix *t = mat_multiply(x, y);
-  mat_destruct(x);
-  mat_destruct(y);
-  Matrix *z = rotate_z_mat(zrad);
-  Matrix *xyz = mat_multiply(t, z);
-  mat_destruct(z);
-  mat_destruct(t);
-  t = mat_multiply(m1, xyz);
-  mat_destruct(m1);
-  mat_destruct(xyz);
-  Matrix *ret = mat_multiply(t, m2);
-  mat_destruct(m2);
-  mat_destruct(t);
-  return ret;
+  Matrix *t = apply_transform_free(rotate_x_mat(TO_RAD(xrad)), m1);
+  t = apply_transform_free(rotate_y_mat(TO_RAD(yrad)), t);
+  t = apply_transform_free(rotate_z_mat(TO_RAD(zrad)), t);
+  t = apply_transform_free(m2, t);
+  return t;
 }
 
 Matrix *apply_transform(Matrix *transform, Matrix *obj) {
