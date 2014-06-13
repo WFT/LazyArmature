@@ -75,6 +75,7 @@ void mat_set_column(struct matrix *mat, int c, double *col) {
 }
 
 struct matrix *mat_multiply(struct matrix *a, struct matrix *b) {  
+  if (a->cols != b->rows) printf("%d != %d (mat_multiply)\n", a->cols, b->rows);
   assert(a->cols == b->rows);
   struct matrix *ret = mat_construct(b->cols, a->rows);
   int r, c, j;

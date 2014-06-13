@@ -9,9 +9,9 @@ main = do
   initDisplay 500 500
   ambientLight 200 200 200
   oform <- newArray [3, 3, 3, 0, 0, 0, 0, 0, 0]
-  --oforn <- newArray [3, 3, 3, 0, 0, 0, -1, -1, 0]
+  oforn <- newArray [3, 3, 3, 0, 0, 0, -1, -1, 0]
   m <- sphere oform
-  --n <- cube oforn
+  n <- cube oforn
   eye <- newArray [0, 0, 10]
   c1 <- newArray [1, 1, 0]
   c2 <- newArray [1, 0, 1]
@@ -19,14 +19,20 @@ main = do
   colorm <- colorsForObject m c1 c2 c3
   rxyz <- xyzAboutPointMatrix 30 0 0 (-10) (-10) 0
   obj <- applyTransformFree rxyz m
-  --colorn <- colorsForObject n c1 c2 c3
-  --renderList [m, n] eye [colorm, colorn]
+  colorn <- colorsForObject n c1 c2 c3
+  putStrLn "renderList... enter to continue"
+  getLine
+  renderList [m, n] eye [colorm, colorn]
+  putStrLn "render... enter to continue"
+  getLine
   render obj eye colorm
-  -- spin m eye colorm 1300
+  putStrLn "spin... quit LazyArmature to continue"
+  spin obj eye colorm 1300
   destructMatrix obj
   getLine
   closeDisplay
 
+-- sometimes segfaults when the C is accessing the first matrix nd I have literally zero idea why
 renderList :: [Ptr Matrix] -> Ptr CDouble -> [Ptr Matrix] -> IO ()
 renderList faces eye colors = do
   facep <- newArray0 nullPtr faces

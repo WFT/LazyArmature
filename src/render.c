@@ -147,7 +147,9 @@ void renderseries(Matrix **faces, double *eye, Matrix **colors) {
   clear_pixel_buffer();
   int p = 0;
   while (faces[p]) {
+    printf("p: %d\n", p);
     renderperspective(faces[p], eye, colors[p]);
+    printf("p: %d\n", p);
     p++;
   }
   flip_KZ_buffer();
