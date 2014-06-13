@@ -1,13 +1,9 @@
 module Execute (
-	RenderState (..),
-	genState,
 	runCommand
 ) where
 
 import Parser
-import Operations
-import Matrix
-import Matrix3D
+import Wrapper
 import Sequence
 
 import Data.Map (Map)
@@ -18,23 +14,9 @@ import Control.Applicative
 import Control.Monad.Trans.State
 import Control.Monad.IO.Class
 
+import Foreign
+import Import
 
-data RenderState m a d = RenderState {_fnum :: Int, 
-				_varys :: Map String [Sequence Double],
-				_currentTransform :: Ptr,
-				_transformations :: Map String Ptr,
-				_currentTri :: Ptr,
-				_bones :: [Bone Ptr],
-				_out :: Resolution Int,
-				}
-				deriving Show
-
-genState :: (V.Storable d) => Renderable ListMatrix Double d -> Vector d -> Resolution Int -> Int -> RenderState ListMatrix Double d
-genState renderable@(Renderable {_col=col}) v out  n= 
-	RenderState n (ML.fromList []) (identity 4 4) (ML.fromList []) 
-		renderable out $ v
-
-testTransformationString = "scale 1 1 2\nmove 2 0 0\n save basic\nrotate 1 1 1\ncube 1 1 1 0 0 0 0 0 0\nrestore basic\ncube 1 1 1 0 0 0 0 0 0"
 
 {-
 test :: [Command] -> IO (RenderState ListMatrix Double)
@@ -55,40 +37,57 @@ getValue f m (Variable s) = fromMaybe (error $ "var not found: " ++ s) $
 getTransform :: (b -> a) -> Map String b -> Transform a -> (a,a,a)
 getTransform f m (a, b, c) = (getValue f m a, getValue f m b, getValue f m c)
 
-transformAndUpdateTri :: (Matrix m,Num a) => [m a] -> StateT (RenderState m a d) IO ()
-transformAndUpdateTri tris = do
+transformApplyTri :: Ptr Matrix -> Ptr Matrix -> StateT RenderState IO ()
+transformApplyTri tris cols = do
 	ss@(RenderState {_currentTransform = cst,
-			_renderable = rm}) <- get
-	put $ ss { _renderable = rm {_triangleMatrix = 
-					(map (transform cst) $ tris)
-					++ _triangleMatrix rm }}
+			_currentTri = ctri,
+			_colors = ccols}) <- get
+	nTri <- liftIO $ extendMatrix ctri =<< applyTransform cst tris
+	nCols <- liftIO $ extendMatrix ccols cols
+	put $ ss { _currentTri = nTri,_colors = nCols}
 
-updateVector :: (V.Storable d) => (Vector Int,Vector d) -> Vector d -> Vector d
-updateVector (ind,v) o = V.update_ o ind v
 
 --The funky bits at the beginning of each op are extracting data from the Val's, whcih are potentially variable
-runCommand :: (Matrix m,V.Storable d) => Command -> StateT (RenderState m Double d) IO ()
+acol = (0,0,1)
+bcol = (1,1,0)
+ccol = (1,0,0)
+runCommand :: Command -> StateT RenderState IO ()
 
 runCommand (Cube ts tr tm) = do
 	RenderState {_fnum = fnum, _varys = vs} <- get
 	let 
-		( = getTransform (seqsVal fnum) vs
-	tri <- cube
-RenderState {_fnum = fnum, _varys = vs} <- get
-	let 	
 		gt = getTransform (seqsVal fnum) vs
 		(s,r,m) = (gt ts,gt tr,gt tm)
-	transformAndUpdateTri $ cube s r m
+	ntri <- liftIO $ cube s r m
+	cols <- liftIO $ colorOfObject ntri acol bcol ccol
+	transformApplyTri ntri cols
 
-runCommand (Sphere rad div ts tr tm) = do
+
+runCommand (Sphere ts tr tm) = do
 	RenderState {_fnum = fnum, _varys = vs} <- get
 	let 	
 		gt = getTransform (seqsVal fnum) vs
 		(s,r,m) = (gt ts,gt tr,gt tm)
-		(radius,division) = (getValue (seqsVal fnum) vs rad,
-				getValue (seqsVal fnum) vs div)
-	transformAndUpdateTri $ sphere radius division s r m
+	ntri <- liftIO $ sphere s r m
+	cols <- liftIO $ colorOfObject ntri acol bcol ccol
+	transformApplyTri ntri cols
 
+runCommand (RenderCyclops te) = do
+	r@(RenderState {_fnum = fnum,_varys = vs}) <- get
+	let
+		e = getTransform (seqsVal fnum) vs te
+	liftIO $ putStrLn "about to run"
+	liftIO $ renderState r e
+	liftIO $ putStrLn "about to run"
+
+runCommand (AddVar s vv vf) = do
+	RenderState {_varys = vs, _fnum = fnum} <- get
+	let 
+		g = getValue (seqsVal fnum) vs
+		f x (a,b) = (x a, x b)
+		(vals,frames) = (f g vv,f (floor . g) vf)
+	modify $ \ss -> ss {_varys = ML.insertWith (++) s [Anim3D frames vals] vs}
+{-
 runCommand (Transformation mode st) = do
 	RenderState {_varys = vs, _fnum = fnum, _currentTransform = cst} <- get
 	let s = getTransform (seqsVal fnum) vs st
@@ -105,13 +104,6 @@ runCommand (Restore s) = do
 	modify $ \ss -> ss {_currentTransform = fromMaybe (error "transform not found") $
 		ML.lookup s $ _transformations ss}
 
-runCommand (AddVar s vv vf) = do
-	RenderState {_varys = vs, _fnum = fnum} <- get
-	let 
-		g = getValue (seqsVal fnum) vs
-		f x (a,b) = (x a, x b)
-		(vals,frames) = (f g vv,f (floor . g) vf)
-	modify $ \ss -> ss {_varys = ML.insertWith (++) s [Anim3D frames vals] vs}
 
 runCommand RenderParallel = do
 	RenderState {_renderable = renderable,_out = out,_buffer = buf} <- get
@@ -133,15 +125,13 @@ runCommand (RenderStereo e1 e2) = do
 	modify $ \ss -> ss {_buffer = foldr updateVector buf $
 		renderStereo out (eye1,eye2) renderable}
 
-runCommand Display = do
-	RenderState {_buffer = buf,_out = out} <- get
-	liftIO $ displayVector (toSize out) buf
 {-
 runCommand (Files s) = do
 	RenderState {_fnum = fnum,
 		_buffer = buf,
 		_out = out} <- get
 	liftIO $ writeFrame s fnum out buf
+-}
 -}
 runCommand Unknown = return ()
 

@@ -62,7 +62,7 @@ transformSkeleton t jtform (Nub l k) = do
     else do
       kids <- mapM (transformSkeleton t jtform) k
       return (Nub (jtform l) k)
-
+{-
 renderBoneAndChildren :: Bone -> (CDouble, CDouble, CDouble) -> IO ()
 renderBoneAndChildren b (ex, ey, ez) = do
   eye <- newArray [ex, ey, ez]
@@ -70,7 +70,7 @@ renderBoneAndChildren b (ex, ey, ez) = do
       colors = colorAndChildren b
       in renderList meshes eye colors
   free eye
-
+-}
 rotateJointAboutX :: Joint -> CDouble -> Joint
 rotateJointAboutX (Joint xi yi zi) xrad =
   let y' = (yi * (cos xrad)) - (zi * (sin xrad))
@@ -137,10 +137,3 @@ testSkeleton = do
   -- ...untested
 
 -- tested:
-renderList :: [Ptr Matrix] -> Ptr CDouble -> [Ptr Matrix] -> IO ()
-renderList faces eye colors = do
-  facep <- newArray0 nullPtr faces
-  colorp <- newArray0 nullPtr colors
-  renderSeries facep eye colorp
-  free facep
-  free colorp
