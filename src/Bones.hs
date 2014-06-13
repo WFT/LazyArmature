@@ -65,3 +65,5 @@ renderList faces eye colors = do
   facep <- newArray0 nullPtr faces
   colorp <- newArray0 nullPtr colors
   renderSeries facep eye colorp
+  free facep
+  free colorp
