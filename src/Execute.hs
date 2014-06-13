@@ -16,7 +16,7 @@ import Control.Monad.IO.Class
 
 import Foreign
 import Import
-
+import Bones
 
 {-
 test :: [Command] -> IO (RenderState ListMatrix Double)
@@ -51,7 +51,36 @@ transformApplyTri tris cols = do
 acol = (0,0,1)
 bcol = (1,1,0)
 ccol = (1,0,0)
+
+retrieveBone :: RenderState -> Bone
+retrieveBone (RenderState {_colors = col, _currentTri = ctri, _bone = bone})
+	= case bone of 
+		n@(Nub {}) -> n
+		l@(Lig {}) -> l {color = col, mesh = ctri}
+
+insertChild :: Bone -> Bone -> Bone
+insertChild pa son = pa {children = son : children pa}
+
 runCommand :: Command -> StateT RenderState IO ()
+
+runCommand (Skeleton tj coms) = do
+	r@(RenderState {_fnum = fnum,_varys = vs}) <- get
+	let j = getTransform (seqsVal fnum) vs tj
+	put $ r {_bone = Nub (toJoint j) []}
+	nr <- get
+	nstate <- liftIO $ execStateT (mapM_ runCommand coms) nr
+	put $ nr {_bone = retrieveBone nstate}
+
+runCommand (Bone tj coms) = do
+	r@(RenderState {_fnum = fnum,_varys = vs,_bone = bone}) <- get
+	let j = getTransform (seqsVal fnum) vs tj
+	meshMatrix <- liftIO $ constructMatrix 0 4
+	colMatrix <- liftIO $ constructMatrix 0 3
+	nstate <- liftIO $ execStateT (mapM_ runCommand coms) $
+		r {	_bone = Lig bone nullPtr nullPtr [] (toJoint j),
+			_currentTri = meshMatrix,
+			_colors = colMatrix}
+	put $ r {_bone = insertChild bone $ retrieveBone nstate}
 
 runCommand (Cube ts tr tm) = do
 	RenderState {_fnum = fnum, _varys = vs} <- get
@@ -76,9 +105,7 @@ runCommand (RenderCyclops te) = do
 	r@(RenderState {_fnum = fnum,_varys = vs}) <- get
 	let
 		e = getTransform (seqsVal fnum) vs te
-	liftIO $ putStrLn "about to run"
 	liftIO $ renderState r e
-	liftIO $ putStrLn "about to run"
 
 runCommand (AddVar s vv vf) = do
 	RenderState {_varys = vs, _fnum = fnum} <- get
@@ -87,6 +114,10 @@ runCommand (AddVar s vv vf) = do
 		f x (a,b) = (x a, x b)
 		(vals,frames) = (f g vv,f (floor . g) vf)
 	modify $ \ss -> ss {_varys = ML.insertWith (++) s [Anim3D frames vals] vs}
+
+runCommand (Print s) = do
+	liftIO $ putStrLn s
+
 {-
 runCommand (Transformation mode st) = do
 	RenderState {_varys = vs, _fnum = fnum, _currentTransform = cst} <- get
