@@ -77,8 +77,8 @@ testSkeleton = do
   c2 <- newArray [1, 0, 1]
   c3 <- newArray [1, 1, 1]
   colors <- colorsForObject c c1 c2 c3
-  let j = Joint (-1) 0 0
-      j2 = Joint 1 0 0
+  let j = Joint (-3) 0 0
+      j2 = Joint 3 0 0
     in return (Nub j c colors [] j2)
 
   -- ...untested

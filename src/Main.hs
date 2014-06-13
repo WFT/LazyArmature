@@ -9,6 +9,19 @@ main = do
   setScreen (-10) (-10) 10 10
   initDisplay 500 500
   ambientLight 200 200 200
+  skele <- testSkeleton
+  renderBoneAndChildren skele (0, 0, 10)
+  getLine
+  skele <- rotateAboutHead skele (0, 45, 0)
+  renderBoneAndChildren skele (0, 0, 10)
+  getLine
+  closeDisplay
+
+{--
+main = do
+  setScreen (-10) (-10) 10 10
+  initDisplay 500 500
+  ambientLight 200 200 200
   oform <- newArray [3, 3, 3, 0, 0, 0, 0, 0, 0]
   oforn <- newArray [3, 3, 3, 0, 0, 0, -1, -1, 0]
   m <- c_sphere oform
@@ -31,7 +44,7 @@ main = do
   spin obj eye colorm 1300
   destructMatrix obj
   closeDisplay
-
+--}
 spin :: Ptr Matrix -> Ptr CDouble -> Ptr Matrix -> Int -> IO ()
 spin faces eye colors delay = do
   tform <- spinMatrix 1 1 1
