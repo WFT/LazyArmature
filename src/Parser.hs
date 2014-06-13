@@ -22,8 +22,7 @@ data Maybe a = Nothing | Just a
 
 data Command = 	Cube (Transform Double) (Transform Double) (Transform Double) 
 		| Sphere (Val Double) (Val Double) (Transform Double) (Transform Double) (Transform Double)
-		| Joint String (Transform Double)
-		| Bone String String [Command]
+		| Bone [Command]
 		| Transformation Method (Transform Double)
 		| Save String
 		| Restore String
@@ -75,23 +74,14 @@ comThenDoubles n s = do
 	many space
 	count n $ many space >> doubleVal
 
-parseJoint :: Parser Command
-parseJoint = do 
-	(x:y:z:_) <- comThenDoubles 3 "joint"
-	many space
-	jName <- manyTill anyToken space
-	return $ Joint jName (x,y,z)
 
 
 parseBone :: Parser Command
 parseBone = do
 	string "bone-start"
 	many space
-	pJoint <- manyTill anyToken space
-	many space
-	eJoint <- manyTill anyToken space
 	boneComms <- manyTill parseCommand (string "bone-end") 
-	return $ Bone pJoint eJoint boneComms 
+	return $ Bone boneComms 
 
 
 parseContents :: Parser [Command]
@@ -101,7 +91,6 @@ parseCommand :: Parser Command
 parseCommand = choice $ map try [
 	parseCube,
 	parseSphere,
-	parseJoint,
 	parseBone,
 	parseScale,
 	parseRotate,
