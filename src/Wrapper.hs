@@ -18,7 +18,7 @@ import Foreign.Marshal.Array
 
 import Bones
 
-import Data.Map (Map)
+import Data.Map (Map,fromList)
 
 import System.IO
 
@@ -41,6 +41,18 @@ data RenderState = RenderState {_fnum :: Int,
 				}
 				deriving Show
 
+genState :: Int -> IO RenderState
+genState fnum = do 
+	identity <- identityMatrix
+	colors <- constructMatrix 0 3
+	mesh <- constructMatrix 0 4
+	return $ RenderState 
+			fnum
+			(fromList [])
+			identity
+			(fromList [])
+			colors mesh
+			(Nub (Joint 0 0 0) [])
 
 cube :: Tform -> Tform -> Tform -> IO (Ptr Matrix)
 cube (sx,sy,sz) (rx,ry,rz) (x,y,z) = c_cube =<< 
