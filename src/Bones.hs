@@ -60,7 +60,9 @@ renderBoneAndChildren b (ex, ey, ez) = do
 rotateAboutHead :: Bone -> (CDouble, CDouble, CDouble) -> IO Bone
 rotateAboutHead b (rx, ry, rz) = do
   tform <- xyzAboutPointMatrix rx ry rz hx hy hz
-  transformBoneAndChildren tform b
+  bon <- transformBoneAndChildren tform b
+  free tform
+  return bon
   where h = case b of (Lig p _ _ _ _) -> tailJoint p
                       (Nub hj _ _ _ _) -> hj
         hx = x h
@@ -78,5 +80,3 @@ renderList faces eye colors = do
   renderSeries facep eye colorp
   free facep
   free colorp
-
-
