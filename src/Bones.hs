@@ -17,21 +17,18 @@ data Bone = Lig { parent :: Bone
                 , children :: [Bone]
                 , tailJoint :: Joint
                 }
-            | Nub { headJoint :: Joint
-                  , mesh :: Ptr Matrix
-                  , color :: Ptr Matrix
+            | Nub { location :: Joint
                   , children :: [Bone]
-                  , tailJoint :: Joint
                   } deriving (Show)
 
 -- untested ...
 meshAndChildren :: Bone -> [Ptr Matrix]
 meshAndChildren (Lig _ m _ kids _) = m : concatMap meshAndChildren kids
-meshAndChildren (Nub _ m _ kids _) = m : concatMap meshAndChildren kids
+meshAndChildren (Nub _ kids) = concatMap meshAndChildren kids
 
 colorAndChildren :: Bone -> [Ptr Matrix]
 colorAndChildren (Lig _ _ c kids _) = c : concatMap colorAndChildren kids
-colorAndChildren (Nub _ _ c kids _) = c : concatMap colorAndChildren kids  
+colorAndChildren (Nub _ kids) = concatMap colorAndChildren kids  
 
 transformMeshSkeleton :: Ptr Matrix -> Bone -> IO Bone
 transformMeshSkeleton t (Lig p m c k tj) = do
@@ -41,13 +38,13 @@ transformMeshSkeleton t (Lig p m c k tj) = do
     else do
       kids <- mapM (transformMeshSkeleton t) k
       return (Lig p nmat c kids tj)
-transformMeshSkeleton t (Nub p m c k tj) = do
-  nmat <- applyTransform t m
+
+transformMeshSkeleton t (Nub l k) = do
   if null k
-    then return (Nub p nmat c k tj)
+    then return (Nub l k)
     else do
       kids <- mapM (transformMeshSkeleton t) k
-      return (Nub p nmat c kids tj)
+      return (Nub l kids)
 
 -- takes a transform matrix & joint transform function
 -- applies to given bone and its descendents
@@ -59,13 +56,12 @@ transformSkeleton t jtform (Lig p m c k tj) = do
     else do
       kids <- mapM (transformSkeleton t jtform) k
       return (Lig p nmat c kids (jtform tj))
-transformSkeleton t jtform (Nub p m c k tj) = do
-  nmat <- applyTransform t m
+transformSkeleton t jtform (Nub l k) = do
   if null k
-    then return (Nub p nmat c k (jtform tj))
+    then return (Nub (jtform l) k)
     else do
       kids <- mapM (transformSkeleton t jtform) k
-      return (Nub p nmat c kids (jtform tj))
+      return (Nub (jtform l) k)
 
 renderBoneAndChildren :: Bone -> (CDouble, CDouble, CDouble) -> IO ()
 renderBoneAndChildren b (ex, ey, ez) = do
@@ -114,7 +110,7 @@ rotateAboutHead b (rx, ry, rz) = do
   free tform
   return bon
   where h = case b of (Lig p _ _ _ _) -> tailJoint p
-                      (Nub hj _ _ _ _) -> hj
+                      (Nub hj _) -> hj
         hx = x h
         hy = y h
         hz = z h
@@ -131,8 +127,8 @@ testSkeleton = do
   colors2 <- colorsForObject s c1 c2 c3
   let j = Joint (-3) 0 0
       j2 = Joint 3 0 0
-      --sub = Lig 
-      root = (Nub j c colors1 [] j2)
+      nub = Nub j []
+      root = (Lig nub c colors1 [] j2)
     in return root
 
   -- ...untested
