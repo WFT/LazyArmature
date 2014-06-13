@@ -1,8 +1,10 @@
 module Wrapper (
 	RenderState (..),
+	Matrix,
 	cube,
 	sphere,
 	renderState,
+	extendMatrix,
 --	writePPM,
 --	writeFrame
 	) where
