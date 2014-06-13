@@ -23,7 +23,11 @@ data Bone = Lig { parent :: Bone
                   }
 
 childMeshes :: Bone -> [Ptr Matrix]
-childMeshes
-  | Bone _ m _ [] _ = [m]
-  | Bone _ m _ kids _ = m:(concat $ map childMeshes kids)
+childMeshes (Lig _ m _ kids _) = m : concatMap childMeshes kids
+childMeshes (Nub _ m _ kids _) = m : concatMap childMeshes kids
+
+childColors :: Bone -> [Ptr Matrix]
+childColors (Lig _ _ c kids _) = c : concatMap childMeshes kids
+childColors (Nub _ _ c kids _) = c : concatMap childMeshes kids
+
                      
