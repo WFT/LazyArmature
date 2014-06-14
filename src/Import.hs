@@ -19,6 +19,8 @@ foreign import ccall "rendercyclops" render ::
   Ptr Matrix -> Ptr CDouble -> Ptr Matrix -> IO ()
 foreign import ccall "renderseries" renderSeries ::
   Ptr (Ptr Matrix) -> Ptr CDouble -> Ptr (Ptr Matrix) -> IO ()
+foreign import ccall "renderppm" renderPPM ::
+  CString -> IO ()
 foreign import ccall "spinmat" spinMatrix ::
   CInt -> CInt -> CInt -> IO (Ptr Matrix)
 foreign import ccall "set_ambient_light" ambientLight ::
