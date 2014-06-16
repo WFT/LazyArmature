@@ -66,7 +66,7 @@ runCommand :: Command -> StateT RenderState IO ()
 runCommand (Skeleton tj coms) = do
 	r@(RenderState {_fnum = fnum,_varys = vs}) <- get
 	let j = getTransform (seqsVal fnum) vs tj
-	put $ r {_bone = Nub (toJoint j) []}
+	put $ r {_bone = Lig (Nub (toJoint j) []) nullPtr nullPtr [] (toJoint j)}
 	nr <- get
 	nstate <- liftIO $ execStateT (mapM_ runCommand coms) nr
 	put $ nr {_bone = retrieveBone nstate}
@@ -90,10 +90,10 @@ runCommand (TransformJoint Rotate tr) = do
 		cr = (trans rx,trans ry,trans rz)
 		j = jointToTform $ boneHead bone
 	nBone <- liftIO $ rotateAboutHead bone cr
-	liftIO $ putStrLn "ready to transform"
-	liftIO $ putStrLn $ show j
 	rotation <- liftIO $ rotateAboutPoint j (toRad rx,toRad ry,toRad rz)
-	nMesh <- liftIO $ applyTransformFree rotation mesh
+	nMesh <- case mesh == nullPtr of
+		False -> liftIO $ applyTransformFree rotation mesh
+		True -> return mesh
 	put $ rs {_bone = nBone,_currentTri = nMesh}
 	where
 		toRad x = x * pi / 180

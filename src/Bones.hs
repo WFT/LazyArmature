@@ -58,7 +58,6 @@ transformMeshSkeleton t (Nub l k) = do
 -- applies to given bone and its descendents
 transformSkeleton :: Ptr Matrix -> (Joint -> Joint) -> Bone -> IO Bone
 transformSkeleton t jtform b@(Lig {mesh = m,children = k}) = do
-	putStrLn $ show b
 	nmat <- case m == nullPtr of
 		True -> return nullPtr
 		False -> applyTransform t m

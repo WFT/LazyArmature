@@ -3,7 +3,7 @@ SDLFLAGS = `sdl2-config --cflags --libs`
 STDFLAGS = -g -O3
 
 run: build
-	./LazyArmature examples/test.laf
+	./LazyArmature examples/human.laf
 
 ghci: build
 	ghci libengine.a Execute.hs
