@@ -9,6 +9,7 @@ module Wrapper (
 	renderList,
 	spin,
 	extendMatrix,
+	writePPM,
 	genState,
 	toJoint,
 --	writePPM,
@@ -20,6 +21,7 @@ import System.IO
 
 import Foreign
 import Foreign.C
+import Foreign.C.String
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 
@@ -84,6 +86,12 @@ colorOfObject obj a b c = do
 	colorsForObject obj ac bc cc
 	where
 		colArr (r,g,b) = newArray $ map realToFrac [r,g,b]
+
+writePPM :: String -> IO ()
+writePPM s = do
+	cs <- newCString s
+	renderPPM cs
+	free cs
 
 extendMatrix :: Ptr Matrix -> Ptr Matrix -> IO (Ptr Matrix)
 extendMatrix mdest msrc = do 

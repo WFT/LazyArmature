@@ -14,6 +14,8 @@ import Control.Applicative
 import Control.Monad.Trans.State
 import Control.Monad.IO.Class
 
+import Text.Printf
+
 import Foreign
 import Import
 import Bones
@@ -129,6 +131,13 @@ runCommand (AddVar s vv vf) = do
 		f x (a,b) = (x a, x b)
 		(vals,frames) = (f g vv,f (floor . g) vf)
 	modify $ \ss -> ss {_varys = ML.insertWith (++) s [Anim3D frames vals] vs}
+
+runCommand (File s) = do
+	liftIO $ writePPM s
+
+runCommand (Files s) = do 
+	(RenderState {_fnum = fnum}) <- get
+	liftIO $ writePPM $ printf "%05d%s.ppm" fnum s
 
 runCommand (Print s) = do
 	liftIO $ putStrLn s
