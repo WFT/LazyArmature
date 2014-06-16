@@ -24,6 +24,7 @@ data Command = 	Cube (Transform Double) (Transform Double) (Transform Double)
 		| Sphere (Transform Double) (Transform Double) (Transform Double)
 		| Skeleton (Transform Double) [Command]
 		| Bone (Transform Double) [Command]
+		| TransformJoint Method (Transform Double)
 		| Transformation Method (Transform Double)
 		| Save String
 		| Restore String
@@ -108,6 +109,7 @@ parseCommand = do
 		parseSphere,
 		parseSkeleton,
 		parseBone,
+		parseJointRotate,
 		parseScale,
 		parseRotate,
 		parseMove,
@@ -138,6 +140,10 @@ parseCube = do
 parseSphere = do
 	(sx:sy:sz:rx:ry:rz:mx:my:mz:_) <- comThenDoubles 9 "sphere"
 	return $ Sphere (sx,sy,sz) (rx,ry,rz) (mx,my,mz)
+
+parseJointRotate = do
+	(x:y:z:_) <- comThenDoubles 3 "rotate-joint"
+	return $ TransformJoint Rotate (x,y,z)
 
 parseScale = do
 	(x:y:z:_) <- comThenDoubles 3 "scale"

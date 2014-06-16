@@ -82,6 +82,21 @@ runCommand (Bone tj coms) = do
 			_colors = colMatrix}
 	put $ r {_bone = insertChild bone $ retrieveBone nstate}
 
+runCommand (TransformJoint Rotate tr) = do
+	rs@(RenderState {_fnum = fnum,_varys = vs,
+			_bone = bone,_currentTri = mesh}) <- get
+	let 	(rx,ry,rz) = getTransform (seqsVal fnum) vs tr
+		trans = toRad . realToFrac
+		cr = (trans rx,trans ry,trans rz)
+		j = jointToTform $ boneHead bone
+	nBone <- liftIO $ rotateAboutHead bone cr
+	liftIO $ putStrLn "ready to transform"
+	liftIO $ putStrLn $ show j
+	rotation <- liftIO $ rotateAboutPoint j (toRad rx,toRad ry,toRad rz)
+	nMesh <- liftIO $ applyTransformFree rotation mesh
+	put $ rs {_bone = nBone,_currentTri = nMesh}
+	where
+		toRad x = x * pi / 180
 runCommand (Cube ts tr tm) = do
 	RenderState {_fnum = fnum, _varys = vs} <- get
 	let 

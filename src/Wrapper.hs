@@ -3,6 +3,7 @@ module Wrapper (
 	Matrix,
 	cube,
 	sphere,
+	rotateAboutPoint,
 	colorOfObject,
 	renderState,
 	renderList,
@@ -70,6 +71,11 @@ sphere :: Tform -> Tform -> Tform -> IO (Ptr Matrix)
 sphere (sx,sy,sz) (rx,ry,rz) (x,y,z) = c_sphere =<<
 	(newArray $ map realToFrac [sx,sy,sz,rx,ry,rz,x,y,z])
 
+rotateAboutPoint :: Tform -> Tform -> IO (Ptr Matrix)
+rotateAboutPoint (px,py,pz) (rx,ry,rz) = 
+	xyzAboutPointMatrix 	(realToFrac rx) (realToFrac ry) (realToFrac rz)
+				(realToFrac px) (realToFrac py) (realToFrac pz)
+				
 colorOfObject :: Ptr Matrix -> Tform -> Tform -> Tform -> IO (Ptr Matrix)
 colorOfObject obj a b c = do
 	ac <- colArr a
