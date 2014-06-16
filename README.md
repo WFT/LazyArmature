@@ -18,4 +18,11 @@ An animation application built in Haskell and C
 3. `test.laf` can be any LazyArmature file
 
 ##Project
-Not everything got implemented, but hey, that's life.
+- Not everything got implemented, but hey, that's life.
+- [GitHub](https://github.com/wft/lazyarmature)
+- credits to Will and Hunter
+- Will wrote the engine in C, the interface with Haskell, and the
+  Skeleton system
+- Hunter implemented a totally awesome parser, used the skeleton
+  system, wrote the command file syntax, and provided Haskell
+  expertise
