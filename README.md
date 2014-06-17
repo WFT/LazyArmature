@@ -26,3 +26,11 @@ An animation application built in Haskell and C
 - Hunter implemented a totally awesome parser, used the skeleton
   system, wrote the command file syntax, and provided Haskell
   expertise
+
+##Notes
+- The matrix math, rendering, object generation, etc. is done in C,
+  which is interacted with through Haskell's Foreign Function
+  Interface (FFI)
+- The syntax allows cool stuff like scoped variables and easy skeleton
+  generation
+- SDL2 is used for placing pixels. That's it.
